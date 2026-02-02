@@ -1,0 +1,116 @@
+{% extends 'base.html' %}
+
+{% block title %}{{ category.name }} - ANTIDRONE.CC{% endblock %}
+
+{% block content %}
+<div class="category-page">
+    <div class="container">
+        <!-- Breadcrumbs -->
+        <nav class="breadcrumbs">
+            <span class="breadcrumb-item">
+                <a href="{% url 'catalog:index' %}">Головна</a>
+            </span>
+            <span class="breadcrumb-separator">/</span>
+            <span class="breadcrumb-item">
+                <a href="{% url 'catalog:category_list' %}">Каталог</a>
+            </span>
+            {% for ancestor in ancestors %}
+            <span class="breadcrumb-separator">/</span>
+            <span class="breadcrumb-item">
+                <a href="{{ ancestor.get_absolute_url }}">{{ ancestor.name }}</a>
+            </span>
+            {% endfor %}
+            <span class="breadcrumb-separator">/</span>
+            <span class="breadcrumb-item active">{{ category.name }}</span>
+        </nav>
+
+        <div class="category-layout">
+            <!-- Sidebar -->
+            <aside class="category-sidebar">
+                <div class="sidebar-card">
+                    <div class="sidebar-header">
+                        <h2 class="sidebar-title">{{ category.name }}</h2>
+                    </div>
+                    <div class="sidebar-body">
+                        {% if category.description %}
+                        <p class="sidebar-description">{{ category.description }}</p>
+                        {% endif %}
+
+                        {% if subcategories %}
+                        <h3 class="sidebar-title" style="font-size: 0.85rem; margin-bottom: 1rem;">Підкатегорії</h3>
+                        <ul class="subcategory-list">
+                            {% for sub in subcategories %}
+                            <li class="subcategory-item">
+                                <a href="{{ sub.get_absolute_url }}" class="subcategory-link">
+                                    {{ sub.name }}
+                                </a>
+                            </li>
+                            {% endfor %}
+                        </ul>
+                        {% endif %}
+                    </div>
+                </div>
+            </aside>
+
+            <!-- Products -->
+            <div class="category-content">
+                <div class="category-header">
+                    <h1 class="category-title-main">{{ category.name }}</h1>
+                    <span class="products-count">{{ products.count }} товарів</span>
+                </div>
+
+                {% if products %}
+                <div class="category-products-grid">
+                    {% for product in products %}
+                    <article class="product-card">
+                        <div class="product-card-image">
+                            {% with main_image=product.get_main_image %}
+                            {% if main_image %}
+                            <img src="{{ main_image.image.url }}" alt="{{ product.name }}">
+                            {% else %}
+                            <span class="product-card-placeholder">NO IMAGE</span>
+                            {% endif %}
+                            {% endwith %}
+                            {% if product.is_new %}
+                            <span class="product-badge badge-new">New</span>
+                            {% elif product.is_popular %}
+                            <span class="product-badge badge-popular">Popular</span>
+                            {% endif %}
+                        </div>
+                        <div class="product-card-body">
+                            <h3 class="product-card-title">
+                                <a href="{{ product.get_absolute_url }}">{{ product.name }}</a>
+                            </h3>
+                            {% if product.sku %}
+                            <div class="product-card-sku">{{ product.sku }}</div>
+                            {% endif %}
+                            {% if product.description %}
+                            <p class="product-card-description">{{ product.description|truncatewords:12 }}</p>
+                            {% endif %}
+                            <div class="product-card-footer">
+                                <div class="product-price">
+                                    {% if product.price %}
+                                    <span class="product-price-current">{{ product.price|floatformat:0 }} UAH</span>
+                                    {% else %}
+                                    <span class="product-price-current" style="font-size: 0.85rem;">За запитом</span>
+                                    {% endif %}
+                                </div>
+                                <a href="{{ product.get_absolute_url }}" class="btn btn-primary">Детальніше</a>
+                            </div>
+                        </div>
+                    </article>
+                    {% endfor %}
+                </div>
+                {% else %}
+                <div class="no-products">
+                    <div class="no-products-icon">
+                        <i class="bi bi-inbox"></i>
+                    </div>
+                    <p class="no-products-text">В цій категорії поки немає товарів</p>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

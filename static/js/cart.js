@@ -238,7 +238,7 @@ console.log('[cart] cart.js loaded; window.addToCart =', typeof window.addToCart
         });
 
         container.innerHTML = rows.join('');
-        summary.innerHTML = `\n            <div class="cart-total">Разом: ${formatPrice(total)} UAH</div>\n            <button class="btn btn-primary btn-clear-cart" data-cart-action="clear">Очистити кошик</button>\n        `;
+        summary.innerHTML = `\n            <div class="cart-total">Разом: ${formatPrice(total)} UAH</div>\n            <a class="btn btn-primary btn-checkout" href="https://t.me/antidrone_ukraine" data-telegram-target="antidrone_ukraine" target="_blank" rel="noopener">Оформити замовлення</a>\n            <button class="btn btn-primary btn-clear-cart" data-cart-action="clear">Очистити кошик</button>\n        `;
     };
 
     document.addEventListener('click', (event) => {

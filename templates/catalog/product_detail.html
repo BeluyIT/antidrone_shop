@@ -94,9 +94,6 @@
                     {% if product.price %}
                     <div class="product-price-main">
                         <span class="product-price-value">{{ product.price|floatformat:0 }} UAH</span>
-                        {% if product.old_price %}
-                        <span class="product-price-old-value">{{ product.old_price|floatformat:0 }} UAH</span>
-                        {% endif %}
                     </div>
                     {% else %}
                     <div class="product-price-main">
@@ -125,17 +122,6 @@
                         <i class="bi bi-cart-plus"></i>
                         Додати в кошик
                     </button>
-                    <a
-                        href="https://t.me/antidrone_ukraine"
-                        class="btn btn-primary btn-lg js-telegram-order btn-cta"
-                        data-telegram="antidrone_ukraine"
-                        data-name="{{ product.name }}"
-                        data-sku="{{ product.sku|default:'' }}"
-                        data-price="{{ product.price|floatformat:0|default:'0' }}"
-                    >
-                        <i class="bi bi-telegram"></i>
-                        Замовити в Telegram
-                    </a>
                 </div>
 
                 <!-- Category -->

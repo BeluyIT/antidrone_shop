@@ -646,6 +646,15 @@ h1, h2, h3, h4, h5, h6 {
     margin-top: 1rem;
 }
 
+.btn-checkout {
+    width: 100%;
+    margin-top: 1rem;
+}
+
+.btn-checkout + .btn-clear-cart {
+    margin-top: 0.75rem;
+}
+
 .btn-ghost {
     background: transparent;
 }
