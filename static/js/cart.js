@@ -1,8 +1,10 @@
-window.addToCart = (button) => {
+const CART_KEY = 'antidrone_cart';
+const LEGACY_KEYS = ['antidrone_cart_v1'];
+
+function addToCart(button) {
     console.log('[cart] addToCart called', button);
     if (!window.__cartAddItem) {
-        console.log('[cart] addToCart called before cart init');
-        return;
+        console.log('[cart] addToCart called before cart init, fallback to direct save');
     }
     if (!button || !button.dataset) {
         return;
@@ -15,12 +17,39 @@ window.addToCart = (button) => {
         qty: 1,
     };
     if (!item.id) return;
-    window.__cartAddItem(item);
-};
+    if (window.__cartAddItem) {
+        window.__cartAddItem(item);
+        return;
+    }
+    let cart = {};
+    try {
+        cart = JSON.parse(localStorage.getItem(CART_KEY) || '{}') || {};
+    } catch (err) {
+        cart = {};
+    }
+    if (!cart.items || typeof cart.items !== 'object') {
+        cart.items = {};
+    }
+    const existing = cart.items[item.id];
+    if (existing) {
+        existing.qty = (Number(existing.qty) || 0) + 1;
+    } else {
+        cart.items[item.id] = item;
+    }
+    console.log('[cart] before save', cart);
+    localStorage.setItem(CART_KEY, JSON.stringify(cart));
+    console.log('[cart] after save', localStorage.getItem(CART_KEY));
+    if (window.__cartUpdateBadge) {
+        window.__cartUpdateBadge();
+    }
+    if (window.__cartRenderPage) {
+        window.__cartRenderPage();
+    }
+}
+
+window.addToCart = addToCart;
 
 (() => {
-    const CART_KEY = 'antidrone_cart';
-    const LEGACY_KEYS = ['antidrone_cart_v1'];
     const log = (...args) => console.log('[cart]', ...args);
     log('cart.js loaded');
 
@@ -242,4 +271,7 @@ window.addToCart = (button) => {
         updateBadge();
         renderCartPage();
     });
+
+    window.__cartUpdateBadge = updateBadge;
+    window.__cartRenderPage = renderCartPage;
 })();
