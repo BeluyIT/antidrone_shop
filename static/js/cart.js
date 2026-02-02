@@ -1,6 +1,7 @@
 (() => {
     const CART_KEY = 'antidrone_cart';
     const LEGACY_KEYS = ['antidrone_cart_v1'];
+    const log = (...args) => console.log('[cart]', ...args);
 
     const safeParse = (value) => {
         if (!value) return null;
@@ -19,10 +20,12 @@
                 if (raw) {
                     localStorage.setItem(CART_KEY, raw);
                     localStorage.removeItem(key);
+                    log('migrated cart key', key, '->', CART_KEY);
                     break;
                 }
             }
         }
+        log('load cart raw', raw);
         return safeParse(raw) || {};
     };
 
@@ -36,6 +39,7 @@
 
     const saveCart = (cart) => {
         localStorage.setItem(CART_KEY, JSON.stringify(cart));
+        log('save cart', cart);
         updateBadge();
     };
 
@@ -98,6 +102,7 @@
         } else {
             cart.items[item.id] = { ...item, qty: Number(item.qty) || 1 };
         }
+        log('add item', item);
         saveCart(cart);
     };
 
@@ -131,6 +136,7 @@
 
         const cart = getCart();
         const items = Object.values(cart.items);
+        log('render cart items', items.length);
 
         if (!items.length) {
             const catalogUrl = container.dataset.catalogUrl || '/catalog/';
@@ -171,8 +177,9 @@
     document.addEventListener('click', (event) => {
         const addButton = event.target.closest('.js-add-to-cart');
         if (addButton) {
+            log('add button click', addButton.dataset);
             const item = {
-                id: String(addButton.dataset.id || ''),
+                id: String(addButton.dataset.productId || addButton.dataset.id || ''),
                 name: addButton.dataset.name || 'Товар',
                 sku: addButton.dataset.sku || '',
                 price: Number(addButton.dataset.price) || 0,
