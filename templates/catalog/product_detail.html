@@ -1,0 +1,210 @@
+{% extends 'base.html' %}
+
+{% block title %}{{ product.name }} - ANTIDRONE.CC{% endblock %}
+
+{% block content %}
+<div class="product-page">
+    <div class="container">
+        <!-- Breadcrumbs -->
+        <nav class="breadcrumbs">
+            <span class="breadcrumb-item">
+                <a href="{% url 'catalog:index' %}">Головна</a>
+            </span>
+            <span class="breadcrumb-separator">/</span>
+            <span class="breadcrumb-item">
+                <a href="{% url 'catalog:category_list' %}">Каталог</a>
+            </span>
+            {% for ancestor in ancestors %}
+            <span class="breadcrumb-separator">/</span>
+            <span class="breadcrumb-item">
+                <a href="{{ ancestor.get_absolute_url }}">{{ ancestor.name }}</a>
+            </span>
+            {% endfor %}
+            <span class="breadcrumb-separator">/</span>
+            <span class="breadcrumb-item">
+                <a href="{{ category.get_absolute_url }}">{{ category.name }}</a>
+            </span>
+            <span class="breadcrumb-separator">/</span>
+            <span class="breadcrumb-item active">{{ product.name }}</span>
+        </nav>
+
+        <div class="product-layout">
+            <!-- Product Gallery -->
+            <div class="product-gallery">
+                <div class="product-main-image">
+                    {% with images=product.images.all %}
+                    {% if images %}
+                    <img src="{{ images.0.image.url }}" alt="{{ product.name }}" id="mainImage">
+                    {% else %}
+                    <div class="product-main-placeholder">
+                        <i class="bi bi-image"></i>
+                        <span>NO IMAGE</span>
+                    </div>
+                    {% endif %}
+                    {% endwith %}
+                </div>
+
+                {% with images=product.images.all %}
+                {% if images.count > 1 %}
+                <div class="product-thumbnails">
+                    {% for image in images %}
+                    <div class="product-thumbnail {% if forloop.first %}active{% endif %}"
+                         onclick="changeImage('{{ image.image.url }}', this)">
+                        <img src="{{ image.image.url }}" alt="{{ product.name }}">
+                    </div>
+                    {% endfor %}
+                </div>
+                {% endif %}
+                {% endwith %}
+            </div>
+
+            <!-- Product Info -->
+            <div class="product-info">
+                <!-- Badges -->
+                <div class="product-badges">
+                    {% if product.is_new %}
+                    <span class="product-badge badge-new">Новинка</span>
+                    {% endif %}
+                    {% if product.is_popular %}
+                    <span class="product-badge badge-popular">Популярний</span>
+                    {% endif %}
+                    {% if product.is_available %}
+                    <span class="product-badge" style="background: var(--accent-secondary);">В наявності</span>
+                    {% else %}
+                    <span class="product-badge" style="background: var(--text-muted);">Під замовлення</span>
+                    {% endif %}
+                </div>
+
+                <!-- Title -->
+                <h1 class="product-title">{{ product.name }}</h1>
+
+                <!-- SKU -->
+                {% if product.sku %}
+                <div class="product-sku">Артикул: {{ product.sku }}</div>
+                {% endif %}
+
+                <!-- Short Description -->
+                {% if product.description %}
+                <p class="product-short-description">{{ product.description }}</p>
+                {% endif %}
+
+                <!-- Price Block -->
+                <div class="product-price-block">
+                    {% if product.price %}
+                    <div class="product-price-main">
+                        <span class="product-price-value">{{ product.price|floatformat:0 }} UAH</span>
+                        {% if product.old_price %}
+                        <span class="product-price-old-value">{{ product.old_price|floatformat:0 }} UAH</span>
+                        {% endif %}
+                    </div>
+                    {% else %}
+                    <div class="product-price-main">
+                        <span class="product-price-value" style="font-size: 1.5rem;">Ціна за запитом</span>
+                    </div>
+                    {% endif %}
+
+                    {% if product.is_available %}
+                    <div class="product-availability">
+                        <i class="bi bi-check-circle-fill"></i>
+                        <span>Є в наявності</span>
+                    </div>
+                    {% endif %}
+
+                    <a href="https://t.me/antidrone_ukraine" target="_blank" class="btn btn-filled btn-lg" style="width: 100%;">
+                        <i class="bi bi-telegram"></i>
+                        Замовити в Telegram
+                    </a>
+                    <button
+                        type="button"
+                        class="btn btn-primary btn-lg js-add-to-cart btn-cart"
+                        data-id="{{ product.id }}"
+                        data-name="{{ product.name }}"
+                        data-sku="{{ product.sku|default:'' }}"
+                        data-price="{{ product.price|floatformat:0|default:'0' }}"
+                    >
+                        <i class="bi bi-cart-plus"></i>
+                        Додати в кошик
+                    </button>
+                </div>
+
+                <!-- Category -->
+                <div class="product-specs">
+                    <div class="product-specs-header">
+                        <h3 class="product-specs-title">Категорія</h3>
+                    </div>
+                    <div class="specs-table">
+                        <div class="specs-row">
+                            <div class="specs-label">Категорія</div>
+                            <div class="specs-value">
+                                <a href="{{ category.get_absolute_url }}">{{ category.name }}</a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Full Description with Specs -->
+        {% if product.full_description %}
+        <div class="product-full-description">
+            <div class="description-header">
+                <h3 class="description-title">Опис та характеристики</h3>
+            </div>
+            <div class="description-body">
+                {{ product.full_description|linebreaks }}
+            </div>
+        </div>
+        {% endif %}
+
+        <!-- Related Products -->
+        {% if related_products %}
+        <div class="related-products">
+            <h2 class="related-title">Схожі товари</h2>
+            <div class="section-divider"></div>
+
+            <div class="products-grid">
+                {% for related in related_products %}
+                <article class="product-card">
+                    <div class="product-card-image">
+                        {% with main_image=related.get_main_image %}
+                        {% if main_image %}
+                        <img src="{{ main_image.image.url }}" alt="{{ related.name }}">
+                        {% else %}
+                        <span class="product-card-placeholder">NO IMAGE</span>
+                        {% endif %}
+                        {% endwith %}
+                    </div>
+                    <div class="product-card-body">
+                        <h3 class="product-card-title">
+                            <a href="{{ related.get_absolute_url }}">{{ related.name }}</a>
+                        </h3>
+                        {% if related.sku %}
+                        <div class="product-card-sku">{{ related.sku }}</div>
+                        {% endif %}
+                        <div class="product-card-footer">
+                            <div class="product-price">
+                                {% if related.price %}
+                                <span class="product-price-current">{{ related.price|floatformat:0 }} UAH</span>
+                                {% endif %}
+                            </div>
+                            <a href="{{ related.get_absolute_url }}" class="btn btn-primary">Детальніше</a>
+                        </div>
+                    </div>
+                </article>
+                {% endfor %}
+            </div>
+        </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+function changeImage(src, thumbnail) {
+    document.getElementById('mainImage').src = src;
+    document.querySelectorAll('.product-thumbnail').forEach(t => t.classList.remove('active'));
+    thumbnail.classList.add('active');
+}
+</script>
+{% endblock %}
