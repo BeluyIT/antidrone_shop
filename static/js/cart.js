@@ -1,3 +1,23 @@
+window.addToCart = (button) => {
+    console.log('[cart] addToCart called', button);
+    if (!window.__cartAddItem) {
+        console.log('[cart] addToCart called before cart init');
+        return;
+    }
+    if (!button || !button.dataset) {
+        return;
+    }
+    const item = {
+        id: String(button.dataset.productId || button.dataset.id || ''),
+        name: button.dataset.name || 'Товар',
+        sku: button.dataset.sku || '',
+        price: Number(button.dataset.price) || 0,
+        qty: 1,
+    };
+    if (!item.id) return;
+    window.__cartAddItem(item);
+};
+
 (() => {
     const CART_KEY = 'antidrone_cart';
     const LEGACY_KEYS = ['antidrone_cart_v1'];
@@ -109,29 +129,7 @@
         log('after save', localStorage.getItem(CART_KEY));
     };
 
-    const extractItemFromElement = (element) => ({
-        id: String(element.dataset.productId || element.dataset.id || ''),
-        name: element.dataset.name || 'Товар',
-        sku: element.dataset.sku || '',
-        price: Number(element.dataset.price) || 0,
-        qty: 1,
-    });
-
-    window.addToCart = (payload) => {
-        if (!payload) return;
-        const element = payload instanceof HTMLElement ? payload : null;
-        const item = element ? extractItemFromElement(element) : {
-            id: String(payload.id || payload.productId || ''),
-            name: payload.name || 'Товар',
-            sku: payload.sku || '',
-            price: Number(payload.price) || 0,
-            qty: Number(payload.qty) || 1,
-        };
-        log('addToCart called', item);
-        if (item.id) {
-            addItem(item);
-        }
-    };
+    window.__cartAddItem = addItem;
 
     const updateItemQty = (id, delta) => {
         const cart = getCart();
