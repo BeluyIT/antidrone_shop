@@ -195,7 +195,8 @@ console.log('[cart] cart.js loaded; window.addToCart =', typeof window.addToCart
 
         if (!items.length) {
             const catalogUrl = container.dataset.catalogUrl || '/catalog/';
-            container.innerHTML = `\n                <div class="cart-empty">\n                    <div class="cart-empty-text">Кошик порожній.</div>\n                    <a class="btn btn-primary btn-ghost" href="${catalogUrl}">Перейти до каталогу</a>\n                </div>\n            `;\n            summary.innerHTML = '<div class="cart-total">Разом: 0 UAH</div>';
+            container.innerHTML = `<div class="cart-empty"><div class="cart-empty-text">Кошик порожній.</div><a class="btn btn-primary btn-ghost" href="${catalogUrl}">Перейти до каталогу</a></div>`;
+            summary.innerHTML = '<div class="cart-total">Разом: 0 UAH</div>';
             return;
         }
 
