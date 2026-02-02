@@ -48,6 +48,7 @@ function addToCart(button) {
 }
 
 window.addToCart = addToCart;
+console.log('[cart] cart.js loaded; window.addToCart =', typeof window.addToCart);
 
 (() => {
     const log = (...args) => console.log('[cart]', ...args);

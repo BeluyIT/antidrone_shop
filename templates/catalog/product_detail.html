@@ -118,7 +118,7 @@
                         data-sku="{{ product.sku|default:'' }}"
                         data-price="{{ product.price|floatformat:0|default:'0' }}"
                         data-add-mode="direct"
-                        onclick="addToCart(this)"
+                        onclick="window.addToCart(this)"
                     >
                         <i class="bi bi-cart-plus"></i>
                         Додати в кошик
