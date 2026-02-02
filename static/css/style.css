@@ -458,8 +458,11 @@ h1, h2, h3, h4, h5, h6 {
     font-size: 1rem;
 }
 
-.btn-cart {
+.btn-cta {
     width: 100%;
+}
+
+.btn-cta + .btn-cta {
     margin-top: 0.75rem;
 }
 

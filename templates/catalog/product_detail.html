@@ -110,13 +110,9 @@
                     </div>
                     {% endif %}
 
-                    <a href="https://t.me/antidrone_ukraine" target="_blank" class="btn btn-filled btn-lg" style="width: 100%;">
-                        <i class="bi bi-telegram"></i>
-                        Замовити в Telegram
-                    </a>
                     <button
                         type="button"
-                        class="btn btn-primary btn-lg js-add-to-cart btn-cart"
+                        class="btn btn-primary btn-lg js-add-to-cart btn-cta"
                         data-id="{{ product.id }}"
                         data-name="{{ product.name }}"
                         data-sku="{{ product.sku|default:'' }}"
@@ -125,6 +121,17 @@
                         <i class="bi bi-cart-plus"></i>
                         Додати в кошик
                     </button>
+                    <a
+                        href="https://t.me/antidrone_ukraine"
+                        class="btn btn-primary btn-lg js-telegram-order btn-cta"
+                        data-telegram="antidrone_ukraine"
+                        data-name="{{ product.name }}"
+                        data-sku="{{ product.sku|default:'' }}"
+                        data-price="{{ product.price|floatformat:0|default:'0' }}"
+                    >
+                        <i class="bi bi-telegram"></i>
+                        Замовити в Telegram
+                    </a>
                 </div>
 
                 <!-- Category -->

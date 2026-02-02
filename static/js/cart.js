@@ -1,5 +1,6 @@
 (() => {
-    const CART_KEY = 'antidrone_cart_v1';
+    const CART_KEY = 'antidrone_cart';
+    const LEGACY_KEYS = ['antidrone_cart_v1'];
 
     const safeParse = (value) => {
         if (!value) return null;
@@ -10,8 +11,23 @@
         }
     };
 
+    const loadStoredCart = () => {
+        let raw = localStorage.getItem(CART_KEY);
+        if (!raw) {
+            for (const key of LEGACY_KEYS) {
+                raw = localStorage.getItem(key);
+                if (raw) {
+                    localStorage.setItem(CART_KEY, raw);
+                    localStorage.removeItem(key);
+                    break;
+                }
+            }
+        }
+        return safeParse(raw) || {};
+    };
+
     const getCart = () => {
-        const data = safeParse(localStorage.getItem(CART_KEY)) || {};
+        const data = loadStoredCart();
         if (!data.items || typeof data.items !== 'object') {
             data.items = {};
         }
@@ -39,6 +55,30 @@
             minimumFractionDigits: 0,
             maximumFractionDigits: 0,
         }).format(amount);
+    };
+
+    const buildTelegramMessage = (item) => {
+        const priceValue = Number(item.price) || 0;
+        const priceText = priceValue > 0 ? `${formatPrice(priceValue)} UAH` : 'ціна за запитом';
+        const lines = [
+            'Запит на товар:',
+            item.name ? `Назва: ${item.name}` : null,
+            item.sku ? `SKU: ${item.sku}` : null,
+            `Ціна: ${priceText}`,
+        ].filter(Boolean);
+        return lines.join('\n');
+    };
+
+    const openTelegramOrder = (button) => {
+        const handle = button.dataset.telegram || 'antidrone_ukraine';
+        const item = {
+            name: button.dataset.name || 'Товар',
+            sku: button.dataset.sku || '',
+            price: Number(button.dataset.price) || 0,
+        };
+        const message = buildTelegramMessage(item);
+        const url = `https://t.me/${handle}?text=${encodeURIComponent(message)}`;
+        window.open(url, '_blank', 'noopener');
     };
 
     const updateBadge = () => {
@@ -141,6 +181,13 @@
             if (item.id) {
                 addItem(item);
             }
+            return;
+        }
+
+        const telegramButton = event.target.closest('.js-telegram-order');
+        if (telegramButton) {
+            event.preventDefault();
+            openTelegramOrder(telegramButton);
             return;
         }
 
