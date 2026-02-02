@@ -23,6 +23,12 @@
         updateBadge();
     };
 
+    const clearCart = () => {
+        const cart = { items: {} };
+        saveCart(cart);
+        renderCartPage();
+    };
+
     const getTotalQty = (cart) => {
         return Object.values(cart.items).reduce((sum, item) => sum + (Number(item.qty) || 0), 0);
     };
@@ -87,8 +93,8 @@
         const items = Object.values(cart.items);
 
         if (!items.length) {
-            container.innerHTML = '<div class="cart-empty">Кошик порожній.</div>';
-            summary.innerHTML = '<div class="cart-total">Разом: 0 UAH</div>';
+            const catalogUrl = container.dataset.catalogUrl || '/catalog/';
+            container.innerHTML = `\n                <div class="cart-empty">\n                    <div class="cart-empty-text">Кошик порожній.</div>\n                    <a class="btn btn-primary btn-ghost" href="${catalogUrl}">Перейти до каталогу</a>\n                </div>\n            `;\n            summary.innerHTML = '<div class="cart-total">Разом: 0 UAH</div>';
             return;
         }
 
@@ -119,7 +125,7 @@
         });
 
         container.innerHTML = rows.join('');
-        summary.innerHTML = `<div class="cart-total">Разом: ${formatPrice(total)} UAH</div>`;
+        summary.innerHTML = `\n            <div class="cart-total">Разом: ${formatPrice(total)} UAH</div>\n            <button class="btn btn-primary btn-clear-cart" data-cart-action="clear">Очистити кошик</button>\n        `;
     };
 
     document.addEventListener('click', (event) => {
@@ -143,6 +149,12 @@
 
         const action = actionButton.dataset.cartAction;
         const id = String(actionButton.dataset.cartId || '');
+
+        if (action === 'clear') {
+            clearCart();
+            return;
+        }
+
         if (!id) return;
 
         if (action === 'inc') {

@@ -615,6 +615,15 @@ h1, h2, h3, h4, h5, h6 {
     color: var(--accent-primary);
 }
 
+.btn-clear-cart {
+    width: 100%;
+    margin-top: 1rem;
+}
+
+.btn-ghost {
+    background: transparent;
+}
+
 .cart-empty {
     padding: 2rem;
     text-align: center;
@@ -622,6 +631,10 @@ h1, h2, h3, h4, h5, h6 {
     border-radius: 8px;
     color: var(--text-secondary);
     background: rgba(13, 18, 13, 0.6);
+}
+
+.cart-empty-text {
+    margin-bottom: 1rem;
 }
 
 .product-badge.badge-popular {
