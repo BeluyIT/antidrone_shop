@@ -54,6 +54,52 @@ function addToCart(button) {
 window.addToCart = addToCart;
 console.log('[cart] cart.js loaded; window.addToCart =', typeof window.addToCart);
 
+window.checkoutToTelegram = (event) => {
+    if (event && typeof event.preventDefault === 'function') {
+        event.preventDefault();
+    }
+    let cart = {};
+    try {
+        cart = JSON.parse(localStorage.getItem(CART_KEY) || '{}') || {};
+    } catch (err) {
+        cart = {};
+    }
+    if (!cart.items || typeof cart.items !== 'object') {
+        cart.items = {};
+    }
+    const items = Object.values(cart.items);
+    if (!items.length) {
+        alert('Кошик порожній.');
+        return false;
+    }
+    const format = (value) => new Intl.NumberFormat('uk-UA', {
+        minimumFractionDigits: 0,
+        maximumFractionDigits: 0,
+    }).format(Number(value) || 0);
+    let total = 0;
+    const lines = items.map((item) => {
+        const price = Number(item.price) || 0;
+        const qty = Number(item.qty) || 0;
+        const lineTotal = price * qty;
+        total += lineTotal;
+        const skuText = item.sku ? `SKU: ${item.sku}` : 'SKU: —';
+        return `- ${item.name || 'Товар'} (${skuText}) x${qty} = ${format(lineTotal)} грн`;
+    });
+    const text = [
+        'Замовлення ANTIDRONE',
+        'Позиції:',
+        ...lines,
+        `Разом: ${format(total)} грн`,
+        '',
+        'Умови: 100% передоплата. Реквізити надішле менеджер.',
+        'Контакт: ______',
+        'Коментар: ______',
+    ].join('\n');
+    const url = `https://t.me/antidrone_ukraine?text=${encodeURIComponent(text)}`;
+    window.open(url, '_blank', 'noopener');
+    return false;
+};
+
 (() => {
     const log = (...args) => console.log('[cart]', ...args);
     log('cart.js loaded');
@@ -200,10 +246,23 @@ console.log('[cart] cart.js loaded; window.addToCart =', typeof window.addToCart
         const items = Object.values(cart.items);
         log('render cart items', items.length);
 
+        const totalEl = summary.querySelector('#cart-total');
+        const checkoutButton = summary.querySelector('.btn-checkout');
+        const clearButton = summary.querySelector('.btn-clear-cart');
+
         if (!items.length) {
             const catalogUrl = container.dataset.catalogUrl || '/catalog/';
             container.innerHTML = `<div class="cart-empty"><div class="cart-empty-text">Кошик порожній.</div><a class="btn btn-primary btn-ghost" href="${catalogUrl}">Перейти до каталогу</a></div>`;
-            summary.innerHTML = '<div class="cart-total">Разом: 0 UAH</div>';
+            if (totalEl) {
+                totalEl.textContent = 'Разом: 0 грн';
+            }
+            if (checkoutButton) {
+                checkoutButton.setAttribute('aria-disabled', 'true');
+                checkoutButton.dataset.cartEmpty = 'true';
+            }
+            if (clearButton) {
+                clearButton.disabled = true;
+            }
             return;
         }
 
@@ -238,7 +297,16 @@ console.log('[cart] cart.js loaded; window.addToCart =', typeof window.addToCart
         });
 
         container.innerHTML = rows.join('');
-        summary.innerHTML = `\n            <div class="cart-total">Разом: ${formatPrice(total)} UAH</div>\n            <a class="btn btn-primary btn-checkout" href="https://t.me/antidrone_ukraine" data-telegram-target="antidrone_ukraine" target="_blank" rel="noopener">Оформити замовлення</a>\n            <button class="btn btn-primary btn-clear-cart" data-cart-action="clear">Очистити кошик</button>\n        `;
+        if (totalEl) {
+            totalEl.textContent = `Разом: ${formatPrice(total)} грн`;
+        }
+        if (checkoutButton) {
+            checkoutButton.removeAttribute('aria-disabled');
+            checkoutButton.dataset.cartEmpty = 'false';
+        }
+        if (clearButton) {
+            clearButton.disabled = false;
+        }
     };
 
     document.addEventListener('click', (event) => {

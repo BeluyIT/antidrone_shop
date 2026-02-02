@@ -10,7 +10,11 @@
 
         <div class="cart-grid">
             <div id="cart-items" class="cart-items" data-catalog-url="{% url 'catalog:category_list' %}"></div>
-            <div id="cart-summary" class="cart-summary"></div>
+            <div id="cart-summary" class="cart-summary">
+                <div id="cart-total" class="cart-total">Разом: 0 грн</div>
+                <a class="btn btn-primary btn-checkout" href="https://t.me/antidrone_ukraine" data-telegram-target="antidrone_ukraine" onclick="return window.checkoutToTelegram(event)">Оформити замовлення</a>
+                <button class="btn btn-primary btn-clear-cart" data-cart-action="clear">Очистити кошик</button>
+            </div>
         </div>
     </div>
 </div>
