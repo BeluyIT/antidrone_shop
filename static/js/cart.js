@@ -14,6 +14,7 @@ function addToCart(button) {
         name: button.dataset.name || 'Товар',
         sku: button.dataset.sku || '',
         price: Number(button.dataset.price) || 0,
+        image: button.dataset.image || '',
         qty: 1,
     };
     if (!item.id) return;
@@ -33,6 +34,9 @@ function addToCart(button) {
     const existing = cart.items[item.id];
     if (existing) {
         existing.qty = (Number(existing.qty) || 0) + 1;
+        if (!existing.image && item.image) {
+            existing.image = item.image;
+        }
     } else {
         cart.items[item.id] = item;
     }
@@ -150,6 +154,9 @@ console.log('[cart] cart.js loaded; window.addToCart =', typeof window.addToCart
         const existing = cart.items[item.id];
         if (existing) {
             existing.qty = (Number(existing.qty) || 0) + (Number(item.qty) || 1);
+            if (!existing.image && item.image) {
+                existing.image = item.image;
+            }
         } else {
             cart.items[item.id] = { ...item, qty: Number(item.qty) || 1 };
         }
@@ -206,8 +213,12 @@ console.log('[cart] cart.js loaded; window.addToCart =', typeof window.addToCart
             const qty = Number(item.qty) || 0;
             const lineTotal = price * qty;
             total += lineTotal;
+            const thumb = item.image
+                ? `<img src="${item.image}" alt="${item.name || 'Товар'}">`
+                : `<div class="cart-thumb-placeholder"></div>`;
             return `
                 <div class="cart-row">
+                    <div class="cart-cell cart-thumb">${thumb}</div>
                     <div class="cart-cell">
                         <div class="cart-title">${item.name || 'Товар'}</div>
                         ${item.sku ? `<div class="cart-sku">SKU: ${item.sku}</div>` : ''}

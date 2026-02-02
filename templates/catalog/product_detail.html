@@ -1,4 +1,5 @@
 {% extends 'base.html' %}
+{% load static %}
 
 {% block title %}{{ product.name }} - ANTIDRONE.CC{% endblock %}
 
@@ -117,6 +118,7 @@
                         data-name="{{ product.name }}"
                         data-sku="{{ product.sku|default:'' }}"
                         data-price="{{ product.price|floatformat:0|default:'0' }}"
+                        data-image="{% with images=product.images.all %}{% if images %}{{ images.0.image.url }}{% else %}{% static 'images/placeholder.png' %}{% endif %}{% endwith %}"
                         data-add-mode="direct"
                         onclick="window.addToCart(this)"
                     >
