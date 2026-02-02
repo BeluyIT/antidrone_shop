@@ -2,6 +2,7 @@
     const CART_KEY = 'antidrone_cart';
     const LEGACY_KEYS = ['antidrone_cart_v1'];
     const log = (...args) => console.log('[cart]', ...args);
+    log('cart.js loaded');
 
     const safeParse = (value) => {
         if (!value) return null;
@@ -102,8 +103,34 @@
         } else {
             cart.items[item.id] = { ...item, qty: Number(item.qty) || 1 };
         }
+        log('before save', cart);
         log('add item', item);
         saveCart(cart);
+        log('after save', localStorage.getItem(CART_KEY));
+    };
+
+    const extractItemFromElement = (element) => ({
+        id: String(element.dataset.productId || element.dataset.id || ''),
+        name: element.dataset.name || 'Товар',
+        sku: element.dataset.sku || '',
+        price: Number(element.dataset.price) || 0,
+        qty: 1,
+    });
+
+    window.addToCart = (payload) => {
+        if (!payload) return;
+        const element = payload instanceof HTMLElement ? payload : null;
+        const item = element ? extractItemFromElement(element) : {
+            id: String(payload.id || payload.productId || ''),
+            name: payload.name || 'Товар',
+            sku: payload.sku || '',
+            price: Number(payload.price) || 0,
+            qty: Number(payload.qty) || 1,
+        };
+        log('addToCart called', item);
+        if (item.id) {
+            addItem(item);
+        }
     };
 
     const updateItemQty = (id, delta) => {
@@ -177,16 +204,9 @@
     document.addEventListener('click', (event) => {
         const addButton = event.target.closest('.js-add-to-cart');
         if (addButton) {
-            log('add button click', addButton.dataset);
-            const item = {
-                id: String(addButton.dataset.productId || addButton.dataset.id || ''),
-                name: addButton.dataset.name || 'Товар',
-                sku: addButton.dataset.sku || '',
-                price: Number(addButton.dataset.price) || 0,
-                qty: 1,
-            };
-            if (item.id) {
-                addItem(item);
+            if (addButton.dataset.addMode !== 'direct') {
+                log('add button click', addButton.dataset);
+                window.addToCart(addButton);
             }
             return;
         }
