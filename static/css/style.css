@@ -277,6 +277,7 @@ h1, h2, h3, h4, h5, h6 {
     color: var(--text-secondary);
     font-size: 0.85rem;
     transition: color var(--transition-smooth);
+    position: relative;
 }
 
 .header-action:hover {
@@ -294,6 +295,10 @@ h1, h2, h3, h4, h5, h6 {
     font-weight: 700;
     padding: 2px 6px;
     border-radius: 10px;
+    position: absolute;
+    top: -6px;
+    right: -10px;
+    z-index: 2;
 }
 
 /* Mobile Menu Toggle */

@@ -1,6 +1,34 @@
 const CART_KEY = 'antidrone_cart';
 const LEGACY_KEYS = ['antidrone_cart_v1'];
 
+window.updateCartBadge = () => {
+    let cart = {};
+    try {
+        cart = JSON.parse(localStorage.getItem(CART_KEY) || '{}') || {};
+    } catch (err) {
+        cart = {};
+    }
+    if (!cart.items || typeof cart.items !== 'object') {
+        cart.items = {};
+    }
+    const qty = Object.values(cart.items).reduce((sum, item) => sum + (Number(item.qty) || 0), 0);
+    const badges = [];
+    const badge = document.getElementById('cartBadge');
+    if (badge) {
+        badges.push(badge);
+    }
+    document.querySelectorAll('.js-cart-badge').forEach((node) => badges.push(node));
+    if (!badges.length) return;
+    badges.forEach((node) => {
+        node.textContent = String(qty);
+        if (qty > 0) {
+            node.removeAttribute('hidden');
+        } else {
+            node.setAttribute('hidden', '');
+        }
+    });
+};
+
 function addToCart(button) {
     console.log('[cart] addToCart called', button);
     if (!window.__cartAddItem) {
@@ -58,6 +86,7 @@ window.checkoutToTelegram = (event) => {
     if (event && typeof event.preventDefault === 'function') {
         event.preventDefault();
     }
+
     let cart = {};
     try {
         cart = JSON.parse(localStorage.getItem(CART_KEY) || '{}') || {};
@@ -69,33 +98,31 @@ window.checkoutToTelegram = (event) => {
     }
     const items = Object.values(cart.items);
     if (!items.length) {
-        alert('Кошик порожній.');
+        alert('Кошик порожній!');
         return false;
     }
-    const format = (value) => new Intl.NumberFormat('uk-UA', {
-        minimumFractionDigits: 0,
-        maximumFractionDigits: 0,
-    }).format(Number(value) || 0);
-    let total = 0;
-    const lines = items.map((item) => {
-        const price = Number(item.price) || 0;
-        const qty = Number(item.qty) || 0;
-        const lineTotal = price * qty;
-        total += lineTotal;
-        const skuText = item.sku ? `SKU: ${item.sku}` : 'SKU: —';
-        return `- ${item.name || 'Товар'} (${skuText}) x${qty} = ${format(lineTotal)} грн`;
-    });
-    const text = [
-        'Замовлення ANTIDRONE',
-        'Позиції:',
-        ...lines,
-        `Разом: ${format(total)} грн`,
-        '',
-        'Умови: 100% передоплата. Реквізити надішле менеджер.',
-        'Контакт: ______',
-        'Коментар: ______',
-    ].join('\n');
-    const url = `https://t.me/antidrone_ukraine?text=${encodeURIComponent(text)}`;
+
+    // Prepare data for Telegram bot deep link
+    const orderData = items.map((item) => ({
+        id: String(item.id || ''),
+        name: item.name || 'Товар',
+        sku: item.sku || '',
+        price: Number(item.price) || 0,
+        qty: Number(item.qty) || 1,
+    }));
+
+    // Encode to base64 for deep link (URL-safe)
+    const jsonData = JSON.stringify(orderData);
+    const encoded = btoa(unescape(encodeURIComponent(jsonData)))
+        .replace(/\+/g, '-')
+        .replace(/\//g, '_')
+        .replace(/=+$/, '');
+
+    // Open Telegram bot with order data
+    const botUsername = 'antidrone_order_bot';
+    const url = `https://t.me/${botUsername}?start=${encoded}`;
+
+    console.log('[cart] Opening Telegram bot:', url);
     window.open(url, '_blank', 'noopener');
     return false;
 };
@@ -141,7 +168,9 @@ window.checkoutToTelegram = (event) => {
     const saveCart = (cart) => {
         localStorage.setItem(CART_KEY, JSON.stringify(cart));
         log('save cart', cart);
-        updateBadge();
+        if (window.updateCartBadge) {
+            window.updateCartBadge();
+        }
     };
 
     const clearCart = () => {
@@ -184,15 +213,6 @@ window.checkoutToTelegram = (event) => {
         const message = buildTelegramMessage(item);
         const url = `https://t.me/${handle}?text=${encodeURIComponent(message)}`;
         window.open(url, '_blank', 'noopener');
-    };
-
-    const updateBadge = () => {
-        const badges = document.querySelectorAll('.js-cart-badge');
-        if (!badges.length) return;
-        const qty = getTotalQty(getCart());
-        badges.forEach((badge) => {
-            badge.textContent = String(qty);
-        });
     };
 
     const addItem = (item) => {
@@ -349,10 +369,12 @@ window.checkoutToTelegram = (event) => {
     });
 
     document.addEventListener('DOMContentLoaded', () => {
-        updateBadge();
+        if (window.updateCartBadge) {
+            window.updateCartBadge();
+        }
         renderCartPage();
     });
 
-    window.__cartUpdateBadge = updateBadge;
+    window.__cartUpdateBadge = window.updateCartBadge;
     window.__cartRenderPage = renderCartPage;
 })();
