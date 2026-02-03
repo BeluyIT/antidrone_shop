@@ -6,7 +6,6 @@ import logging
 from typing import Any
 
 from telegram import Update, ReplyKeyboardMarkup, KeyboardButton, InlineKeyboardMarkup, InlineKeyboardButton
-from telegram.constants import ParseMode
 from telegram.ext import (
     ApplicationBuilder,
     CommandHandler,
@@ -88,7 +87,8 @@ async def start(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
             context.user_data["order_active"] = True
 
             text = (
-                f"{base_text}\n\n"
+                f"{base_text}\n"
+                f"Payload: {payload}\n\n"
                 f"Отримано замовлення:\n{items_text}\n\n"
                 f"Разом: {total} грн\n\n"
                 f"Введіть ваше ім'я:"
