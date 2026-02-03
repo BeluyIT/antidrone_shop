@@ -74,6 +74,9 @@ function addToCart(button) {
     if (window.__cartUpdateBadge) {
         window.__cartUpdateBadge();
     }
+    if (window.updateCartBadge) {
+        window.updateCartBadge();
+    }
     if (window.__cartRenderPage) {
         window.__cartRenderPage();
     }

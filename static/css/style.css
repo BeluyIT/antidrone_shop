@@ -277,7 +277,11 @@ h1, h2, h3, h4, h5, h6 {
     color: var(--text-secondary);
     font-size: 0.85rem;
     transition: color var(--transition-smooth);
+}
+
+.header-cart {
     position: relative;
+    overflow: visible;
 }
 
 .header-action:hover {
