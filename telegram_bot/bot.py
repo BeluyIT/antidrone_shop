@@ -11,7 +11,6 @@ from telegram.ext import (
     CommandHandler,
     ContextTypes,
     MessageHandler,
-    ConversationHandler,
     filters,
 )
 
@@ -29,6 +28,7 @@ logger = logging.getLogger(__name__)
 logging.getLogger("httpx").setLevel(logging.WARNING)
 
 ASK_NAME, ASK_PHONE, ASK_CITY, ASK_COMMENT = range(4)
+STATE_KEY = "order_state"
 
 
 def build_start_keyboard() -> ReplyKeyboardMarkup:
@@ -73,6 +73,7 @@ def format_items(items: list[dict[str, Any]]) -> tuple[str, int]:
 
 
 async def start(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
+    logger.info("Start handler called")
     payload = " ".join(context.args).strip() if context.args else ""
     base_text = "Бот працює ✅"
 
@@ -85,6 +86,7 @@ async def start(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
             context.user_data["order_total"] = total
             context.user_data["order_payload_raw"] = payload
             context.user_data["order_active"] = True
+            context.user_data[STATE_KEY] = ASK_NAME
 
             text = (
                 f"{base_text}\n"
@@ -94,14 +96,14 @@ async def start(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
                 f"Введіть ваше ім'я:"
             )
             await update.message.reply_text(text)
-            return ASK_NAME
+            return
 
         text = f"{base_text}\nPayload: {payload}\nНе вдалося розкодувати payload."
         await update.message.reply_text(text, reply_markup=build_start_keyboard())
-        return ConversationHandler.END
+        return
 
     await update.message.reply_text(base_text, reply_markup=build_start_keyboard())
-    return ConversationHandler.END
+    return
 
 
 async def menu_handler(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
@@ -124,37 +126,40 @@ async def menu_handler(update: Update, context: ContextTypes.DEFAULT_TYPE) -> No
         await update.message.reply_text("Сайт:", reply_markup=build_site_keyboard())
 
 
-async def ask_name(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
+async def ask_name(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
     name = (update.message.text or "").strip()
     if len(name) < 2:
         await update.message.reply_text("Ім'я занадто коротке. Введіть ім'я:")
-        return ASK_NAME
+        return
     context.user_data["name"] = name
+    context.user_data[STATE_KEY] = ASK_PHONE
     await update.message.reply_text("Введіть телефон:")
-    return ASK_PHONE
+    return
 
 
-async def ask_phone(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
+async def ask_phone(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
     phone = (update.message.text or "").strip()
     if len(phone) < 5:
         await update.message.reply_text("Невірний телефон. Введіть телефон:")
-        return ASK_PHONE
+        return
     context.user_data["phone"] = phone
+    context.user_data[STATE_KEY] = ASK_CITY
     await update.message.reply_text("Введіть місто та відділення НП:")
-    return ASK_CITY
+    return
 
 
-async def ask_city(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
+async def ask_city(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
     city = (update.message.text or "").strip()
     if len(city) < 2:
         await update.message.reply_text("Вкажіть місто та відділення НП:")
-        return ASK_CITY
+        return
     context.user_data["city"] = city
+    context.user_data[STATE_KEY] = ASK_COMMENT
     await update.message.reply_text("Коментар (або «-»):")
-    return ASK_COMMENT
+    return
 
 
-async def ask_comment(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
+async def ask_comment(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
     comment = (update.message.text or "").strip()
     context.user_data["comment"] = comment
 
@@ -178,7 +183,24 @@ async def ask_comment(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int
     await update.message.reply_text("Замовлення прийнято ✅ менеджер зв'яжеться")
 
     context.user_data.clear()
-    return ConversationHandler.END
+    return
+
+
+async def text_router(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
+    state = context.user_data.get(STATE_KEY)
+    if state == ASK_NAME:
+        await ask_name(update, context)
+        return
+    if state == ASK_PHONE:
+        await ask_phone(update, context)
+        return
+    if state == ASK_CITY:
+        await ask_city(update, context)
+        return
+    if state == ASK_COMMENT:
+        await ask_comment(update, context)
+        return
+    await menu_handler(update, context)
 
 
 async def log_update(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
@@ -198,19 +220,8 @@ def main() -> None:
 
     application = ApplicationBuilder().token(BOT_TOKEN).post_init(post_init).build()
 
-    conversation = ConversationHandler(
-        entry_points=[CommandHandler("start", start)],
-        states={
-            ASK_NAME: [MessageHandler(filters.TEXT & ~filters.COMMAND, ask_name)],
-            ASK_PHONE: [MessageHandler(filters.TEXT & ~filters.COMMAND, ask_phone)],
-            ASK_CITY: [MessageHandler(filters.TEXT & ~filters.COMMAND, ask_city)],
-            ASK_COMMENT: [MessageHandler(filters.TEXT & ~filters.COMMAND, ask_comment)],
-        },
-        fallbacks=[],
-    )
-
-    application.add_handler(conversation)
-    application.add_handler(MessageHandler(filters.Regex(r'^(📦 Нове замовлення|💬 Менеджер|🌐 Сайт)$'), menu_handler))
+    application.add_handler(CommandHandler("start", start))
+    application.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND, text_router))
     application.add_handler(MessageHandler(filters.ALL & ~filters.COMMAND, log_update), group=1)
     application.add_error_handler(error_handler)
 
