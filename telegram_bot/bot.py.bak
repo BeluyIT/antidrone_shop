@@ -8,7 +8,8 @@ from urllib import request as urlrequest
 import ssl
 import os
 import asyncio
-from typing import Any, Optional, List, Dict, Tuple
+from typing import Any
+
 from telegram import Update, ReplyKeyboardMarkup, KeyboardButton, InlineKeyboardMarkup, InlineKeyboardButton, ReplyKeyboardRemove
 from telegram.helpers import escape_markdown
 from telegram.constants import ParseMode
@@ -54,7 +55,7 @@ STATE_KEY = "order_state"
 # ============================================
 # ORDER API
 # ============================================
-def _open_url(url: str) -> Optional[bytes]:
+def _open_url(url: str) -> bytes | None:
     try:
         with urlrequest.urlopen(url, timeout=10) as response:
             if response.status != 200:
@@ -64,7 +65,7 @@ def _open_url(url: str) -> Optional[bytes]:
         return None
 
 
-def _open_url_allow_insecure(url: str) -> Optional[bytes]:
+def _open_url_allow_insecure(url: str) -> bytes | None:
     try:
         context = ssl._create_unverified_context()
         with urlrequest.urlopen(url, timeout=10, context=context) as response:
@@ -75,7 +76,7 @@ def _open_url_allow_insecure(url: str) -> Optional[bytes]:
         return None
 
 
-def fetch_order_from_api(order_id: str) -> Optional[dict]:
+def fetch_order_from_api(order_id: str) -> dict | None:
     """Fetch order JSON from site API."""
     bases = []
     site = SITE_URL.rstrip('/')
@@ -185,7 +186,7 @@ def build_site_keyboard() -> InlineKeyboardMarkup:
 # ============================================
 # HELPERS
 # ============================================
-def decode_payload(payload: str) -> Optional[List[Dict[str, Any]]]:
+def decode_payload(payload: str) -> list[dict[str, Any]] | None:
     """Decode base64 payload from deep link.
 
     Supported formats:
@@ -194,7 +195,7 @@ def decode_payload(payload: str) -> Optional[List[Dict[str, Any]]]:
     """
     logger.info(f"decode_payload called with: '{payload}'")
 
-    def parse_compact_json(data: Any) -> Optional[List[Dict[str, Any]]]:
+    def parse_compact_json(data: Any) -> list[dict[str, Any]] | None:
         if isinstance(data, list) and data and isinstance(data[0], list):
             items = []
             for row in data:
@@ -223,7 +224,7 @@ def decode_payload(payload: str) -> Optional[List[Dict[str, Any]]]:
             return items or None
         return None
 
-    def parse_legacy_text(text: str) -> Optional[List[Dict[str, Any]]]:
+    def parse_legacy_text(text: str) -> list[dict[str, Any]] | None:
         items = []
         for item_str in text.split(';'):
             item_str = item_str.strip()
@@ -308,7 +309,7 @@ def format_items_short(items: list[dict[str, Any]]) -> str:
     return "\n".join(lines)
 
 
-def validate_phone(phone: str) -> Optional[str]:
+def validate_phone(phone: str) -> str | None:
     """Validate and normalize Ukrainian phone number."""
     cleaned = re.sub(r'[^\d+]', '', phone)
     patterns = [
@@ -322,7 +323,7 @@ def validate_phone(phone: str) -> Optional[str]:
     return None
 
 
-def parse_order_text(text: str) -> Optional[Tuple[List[Dict[str, Any]], int]]:
+def parse_order_text(text: str) -> tuple[list[dict[str, Any]], int] | None:
     """Parse order from text message sent via ?text= link.
 
     Format: ORDER:
@@ -381,7 +382,7 @@ def parse_order_text(text: str) -> Optional[Tuple[List[Dict[str, Any]], int]]:
     return None
 
 
-def parse_clipboard_order(text: str) -> Optional[Tuple[List[Dict[str, Any]], int]]:
+def parse_clipboard_order(text: str) -> tuple[list[dict[str, Any]], int] | None:
     """Parse order from clipboard paste (new format from cart.js).
 
     Format:

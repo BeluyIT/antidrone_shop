@@ -1,7 +1,8 @@
 """
 Django settings for antidrone project.
 """
-
+from dotenv import load_dotenv
+load_dotenv()
 from pathlib import Path
 from decouple import config, Csv
 
