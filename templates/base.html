@@ -59,11 +59,28 @@
                 </a>
             </div>
 
-            <button class="mobile-toggle" type="button">
+            <button class="mobile-toggle" type="button" aria-label="Відкрити меню" aria-expanded="false">
                 <i class="bi bi-list"></i>
             </button>
         </div>
     </header>
+
+    <!-- Mobile Navigation -->
+    <nav class="mobile-nav" id="mobile-nav">
+        <a href="{% url 'catalog:index' %}" class="mobile-nav-link">Головна</a>
+        <a href="{% url 'catalog:category_detail' slug='anteny' %}" class="mobile-nav-link">Антени</a>
+        <a href="{% url 'catalog:category_detail' slug='directional' %}" class="mobile-nav-sublink">Directional</a>
+        <a href="{% url 'catalog:category_detail' slug='omni' %}" class="mobile-nav-sublink">Omni-Directional</a>
+        <a href="{% url 'catalog:category_detail' slug='patch' %}" class="mobile-nav-sublink">Patch</a>
+        <a href="{% url 'catalog:category_detail' slug='panel' %}" class="mobile-nav-sublink">Panel</a>
+        <a href="{% url 'catalog:category_detail' slug='moduli' %}" class="mobile-nav-link">Модулі</a>
+        <a href="{% url 'catalog:category_detail' slug='rf-detektory' %}" class="mobile-nav-sublink">RF Детектори</a>
+        <a href="{% url 'catalog:category_detail' slug='sdr-moduli' %}" class="mobile-nav-sublink">SDR Модулі</a>
+        <a href="{% url 'catalog:category_detail' slug='pidsylyuvachi' %}" class="mobile-nav-sublink">Підсилювачі</a>
+        <a href="https://t.me/antidrone_ukraine" target="_blank" class="mobile-nav-link">
+            <i class="bi bi-telegram"></i> @antidrone_ukraine
+        </a>
+    </nav>
 
     <main>
         {% block content %}{% endblock %}

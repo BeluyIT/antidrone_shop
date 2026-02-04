@@ -564,6 +564,45 @@ console.log('[cart] cart.js loaded; window.addToCart =', typeof window.addToCart
     window.__checkoutStart = startCheckout;
     bindCheckoutModal();
 
+    // Mobile menu toggle
+    const initMobileMenu = () => {
+        const toggle = document.querySelector('.mobile-toggle');
+        const mobileNav = document.getElementById('mobile-nav');
+        if (!toggle || !mobileNav) return;
+
+        toggle.addEventListener('click', () => {
+            const isOpen = mobileNav.classList.toggle('is-open');
+            toggle.classList.toggle('is-active', isOpen);
+            toggle.setAttribute('aria-expanded', isOpen ? 'true' : 'false');
+
+            const icon = toggle.querySelector('i');
+            if (icon) {
+                icon.classList.toggle('bi-list', !isOpen);
+                icon.classList.toggle('bi-x-lg', isOpen);
+            }
+        });
+
+        // Close menu when clicking on a link
+        mobileNav.addEventListener('click', (e) => {
+            if (e.target.closest('a')) {
+                mobileNav.classList.remove('is-open');
+                toggle.classList.remove('is-active');
+                toggle.setAttribute('aria-expanded', 'false');
+                const icon = toggle.querySelector('i');
+                if (icon) {
+                    icon.classList.remove('bi-x-lg');
+                    icon.classList.add('bi-list');
+                }
+            }
+        });
+    };
+
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', initMobileMenu);
+    } else {
+        initMobileMenu();
+    }
+
     // Also update badge immediately if DOM is already ready
     if (document.readyState === 'complete' || document.readyState === 'interactive') {
         console.log('[cart] DOM already ready, updating badge immediately');
