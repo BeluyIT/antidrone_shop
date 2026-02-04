@@ -2,29 +2,44 @@ const CART_KEY = 'antidrone_cart';
 const LEGACY_KEYS = ['antidrone_cart_v1'];
 
 window.updateCartBadge = () => {
+    console.log('[cart] updateCartBadge called');
     let cart = {};
     try {
         cart = JSON.parse(localStorage.getItem(CART_KEY) || '{}') || {};
     } catch (err) {
+        console.error('[cart] Failed to parse cart:', err);
         cart = {};
     }
     if (!cart.items || typeof cart.items !== 'object') {
         cart.items = {};
     }
     const qty = Object.values(cart.items).reduce((sum, item) => sum + (Number(item.qty) || 0), 0);
+    console.log('[cart] Total quantity:', qty);
+
     const badges = [];
     const badge = document.getElementById('cartBadge');
     if (badge) {
         badges.push(badge);
+        console.log('[cart] Found badge by ID: cartBadge');
+    } else {
+        console.warn('[cart] Badge element #cartBadge NOT FOUND');
     }
     document.querySelectorAll('.js-cart-badge').forEach((node) => badges.push(node));
-    if (!badges.length) return;
-    badges.forEach((node) => {
+
+    console.log('[cart] Total badges found:', badges.length);
+    if (!badges.length) {
+        console.warn('[cart] No badge elements found!');
+        return;
+    }
+
+    badges.forEach((node, index) => {
         node.textContent = String(qty);
         if (qty > 0) {
             node.removeAttribute('hidden');
+            console.log(`[cart] Badge ${index}: showing with qty=${qty}`);
         } else {
             node.setAttribute('hidden', '');
+            console.log(`[cart] Badge ${index}: hidden (qty=0)`);
         }
     });
 };
@@ -84,51 +99,6 @@ function addToCart(button) {
 
 window.addToCart = addToCart;
 console.log('[cart] cart.js loaded; window.addToCart =', typeof window.addToCart);
-
-window.checkoutToTelegram = (event) => {
-    if (event && typeof event.preventDefault === 'function') {
-        event.preventDefault();
-    }
-
-    let cart = {};
-    try {
-        cart = JSON.parse(localStorage.getItem(CART_KEY) || '{}') || {};
-    } catch (err) {
-        cart = {};
-    }
-    if (!cart.items || typeof cart.items !== 'object') {
-        cart.items = {};
-    }
-    const items = Object.values(cart.items);
-    if (!items.length) {
-        alert('Кошик порожній!');
-        return false;
-    }
-
-    // Prepare data for Telegram bot deep link
-    const orderData = items.map((item) => ({
-        id: String(item.id || ''),
-        name: item.name || 'Товар',
-        sku: item.sku || '',
-        price: Number(item.price) || 0,
-        qty: Number(item.qty) || 1,
-    }));
-
-    // Encode to base64 for deep link (URL-safe)
-    const jsonData = JSON.stringify(orderData);
-    const encoded = btoa(unescape(encodeURIComponent(jsonData)))
-        .replace(/\+/g, '-')
-        .replace(/\//g, '_')
-        .replace(/=+$/, '');
-
-    // Open Telegram bot with order data
-    const botUsername = 'antidrone_order_bot';
-    const url = `https://t.me/${botUsername}?start=${encoded}`;
-
-    console.log('[cart] Opening Telegram bot:', url);
-    window.open(url, '_blank', 'noopener');
-    return false;
-};
 
 (() => {
     const log = (...args) => console.log('[cart]', ...args);
@@ -200,7 +170,6 @@ window.checkoutToTelegram = (event) => {
         const lines = [
             'Запит на товар:',
             item.name ? `Назва: ${item.name}` : null,
-            item.sku ? `SKU: ${item.sku}` : null,
             `Ціна: ${priceText}`,
         ].filter(Boolean);
         return lines.join('\n');
@@ -210,7 +179,6 @@ window.checkoutToTelegram = (event) => {
         const handle = button.dataset.telegram || 'antidrone_ukraine';
         const item = {
             name: button.dataset.name || 'Товар',
-            sku: button.dataset.sku || '',
             price: Number(button.dataset.price) || 0,
         };
         const message = buildTelegramMessage(item);
@@ -303,7 +271,6 @@ window.checkoutToTelegram = (event) => {
                     <div class="cart-cell cart-thumb">${thumb}</div>
                     <div class="cart-cell">
                         <div class="cart-title">${item.name || 'Товар'}</div>
-                        ${item.sku ? `<div class="cart-sku">SKU: ${item.sku}</div>` : ''}
                     </div>
                     <div class="cart-cell cart-price">${formatPrice(price)} UAH</div>
                     <div class="cart-cell cart-qty">
@@ -333,6 +300,18 @@ window.checkoutToTelegram = (event) => {
     };
 
     document.addEventListener('click', (event) => {
+        const productCard = event.target.closest('.product-card[data-product-url]');
+        if (productCard) {
+            const isAction = event.target.closest('a, button');
+            if (!isAction) {
+                const url = productCard.dataset.productUrl;
+                if (url) {
+                    window.location.href = url;
+                    return;
+                }
+            }
+        }
+
         const addButton = event.target.closest('.js-add-to-cart');
         if (addButton) {
             if (addButton.dataset.addMode !== 'direct') {
@@ -346,6 +325,13 @@ window.checkoutToTelegram = (event) => {
         if (telegramButton) {
             event.preventDefault();
             openTelegramOrder(telegramButton);
+            return;
+        }
+
+        const checkoutTrigger = event.target.closest('[data-checkout-start]');
+        if (checkoutTrigger) {
+            event.preventDefault();
+            startCheckout();
             return;
         }
 
@@ -372,11 +358,221 @@ window.checkoutToTelegram = (event) => {
     });
 
     document.addEventListener('DOMContentLoaded', () => {
+        console.log('[cart] DOMContentLoaded fired');
         if (window.updateCartBadge) {
             window.updateCartBadge();
+            console.log('[cart] Badge updated on DOMContentLoaded');
         }
         renderCartPage();
     });
+
+    const checkoutState = {
+        items: [],
+        total: 0,
+    };
+
+    const getCookie = (name) => {
+        const match = document.cookie.match(new RegExp(`(?:^|; )${name.replace(/([$?*|{}\]\\^])/g, '\\$1')}=([^;]*)`));
+        return match ? decodeURIComponent(match[1]) : '';
+    };
+
+    const showToast = (message, tone = 'error') => {
+        const toast = document.getElementById('checkout-toast');
+        if (!toast) {
+            alert(message);
+            return;
+        }
+        toast.textContent = message;
+        toast.classList.toggle('is-error', tone === 'error');
+        toast.classList.add('is-visible');
+        toast.removeAttribute('hidden');
+        clearTimeout(toast.__hideTimer);
+        toast.__hideTimer = setTimeout(() => {
+            toast.classList.remove('is-visible');
+            toast.setAttribute('hidden', '');
+        }, 4200);
+    };
+
+    const renderCheckoutPreview = () => {
+        const itemsContainer = document.getElementById('checkout-modal-items');
+        const totalContainer = document.getElementById('checkout-modal-total');
+        if (!itemsContainer || !totalContainer) return;
+
+        if (!checkoutState.items.length) {
+            itemsContainer.innerHTML = '<div class="checkout-modal-empty">Кошик порожній.</div>';
+            totalContainer.textContent = '';
+            return;
+        }
+
+        const rows = checkoutState.items.map((item) => {
+            const name = item.name || 'Товар';
+            const qty = Number(item.qty) || 1;
+            return `
+                <div class="checkout-modal-row">
+                    <span class="checkout-modal-name">${name}</span>
+                    <span class="checkout-modal-qty">× ${qty}</span>
+                </div>
+            `;
+        });
+
+        itemsContainer.innerHTML = rows.join('');
+        totalContainer.textContent = `Разом: ${formatPrice(checkoutState.total)} грн`;
+    };
+
+    const openCheckoutModal = () => {
+        const modal = document.getElementById('checkout-modal');
+        if (!modal) {
+            showToast('Не вдалося відкрити вікно підтвердження.');
+            return;
+        }
+        const errorBox = document.getElementById('checkout-modal-error');
+        if (errorBox) {
+            errorBox.textContent = '';
+            errorBox.setAttribute('hidden', '');
+        }
+        renderCheckoutPreview();
+        modal.removeAttribute('hidden');
+        modal.classList.add('is-open');
+        document.body.classList.add('modal-open');
+    };
+
+    const closeCheckoutModal = () => {
+        const modal = document.getElementById('checkout-modal');
+        if (!modal) return;
+        modal.classList.remove('is-open');
+        modal.setAttribute('hidden', '');
+        document.body.classList.remove('modal-open');
+    };
+
+    const buildOrderPayload = () => ({
+        items: checkoutState.items.map((item) => ({
+            sku: String(item.sku || '').trim(),
+            name: String(item.name || 'Товар').trim(),
+            price: Math.round(Number(item.price) || 0),
+            qty: Math.max(1, Math.round(Number(item.qty) || 1)),
+        })),
+        total: Math.round(Number(checkoutState.total) || 0),
+        currency: 'UAH',
+        source: 'site',
+        page: window.location.href,
+        ts: Date.now(),
+    });
+
+    const createOrder = async () => {
+        const csrfToken = getCookie('csrftoken');
+        if (!csrfToken) {
+            throw new Error('Не вдалося отримати CSRF токен.');
+        }
+
+        const response = await fetch('/api/create-order/', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': csrfToken,
+            },
+            body: JSON.stringify(buildOrderPayload()),
+        });
+
+        if (!response.ok) {
+            let errorMessage = 'Помилка при створенні замовлення.';
+            try {
+                const data = await response.json();
+                if (data && data.error) {
+                    errorMessage = data.error;
+                }
+            } catch (err) {
+                // ignore parsing errors
+            }
+            throw new Error(errorMessage);
+        }
+
+        return response.json();
+    };
+
+    const startCheckout = () => {
+        const cart = getCart();
+        const items = Object.values(cart.items || {});
+        if (!items.length) {
+            showToast('Кошик порожній.');
+            return;
+        }
+        checkoutState.items = items;
+        checkoutState.total = items.reduce(
+            (sum, item) => sum + (Number(item.price) || 0) * (Number(item.qty) || 1),
+            0
+        );
+        openCheckoutModal();
+    };
+
+    const bindCheckoutModal = () => {
+        const modal = document.getElementById('checkout-modal');
+        if (!modal) return;
+
+        modal.addEventListener('click', (event) => {
+            const closeTarget = event.target.closest('[data-checkout-close]');
+            if (closeTarget) {
+                closeCheckoutModal();
+            }
+        });
+
+        const cancelButton = modal.querySelector('[data-checkout-cancel]');
+        if (cancelButton) {
+            cancelButton.addEventListener('click', () => closeCheckoutModal());
+        }
+
+        const confirmButton = modal.querySelector('[data-checkout-confirm]');
+        if (confirmButton) {
+            confirmButton.addEventListener('click', async () => {
+                if (!checkoutState.items.length) {
+                    const errorBox = document.getElementById('checkout-modal-error');
+                    if (errorBox) {
+                        errorBox.textContent = 'Кошик порожній.';
+                        errorBox.removeAttribute('hidden');
+                    } else {
+                        showToast('Кошик порожній.');
+                    }
+                    return;
+                }
+                confirmButton.disabled = true;
+                confirmButton.setAttribute('aria-busy', 'true');
+                const originalLabel = confirmButton.textContent;
+                confirmButton.textContent = 'Відправляємо...';
+                try {
+                    const result = await createOrder();
+                    if (!result || !result.order_id) {
+                        throw new Error('Сервер не повернув номер замовлення.');
+                    }
+                    closeCheckoutModal();
+                    window.location.href = `https://t.me/antidrone_order_bot?start=${result.order_id}`;
+                } catch (err) {
+                    const errorBox = document.getElementById('checkout-modal-error');
+                    if (errorBox) {
+                        errorBox.textContent = err.message || 'Сталася помилка. Спробуйте ще раз.';
+                        errorBox.removeAttribute('hidden');
+                    } else {
+                        showToast(err.message || 'Сталася помилка. Спробуйте ще раз.');
+                    }
+                } finally {
+                    confirmButton.disabled = false;
+                    confirmButton.removeAttribute('aria-busy');
+                    confirmButton.textContent = originalLabel;
+                }
+            });
+        }
+    };
+
+    window.__checkoutStart = startCheckout;
+    bindCheckoutModal();
+
+    // Also update badge immediately if DOM is already ready
+    if (document.readyState === 'complete' || document.readyState === 'interactive') {
+        console.log('[cart] DOM already ready, updating badge immediately');
+        setTimeout(() => {
+            if (window.updateCartBadge) {
+                window.updateCartBadge();
+            }
+        }, 0);
+    }
 
     window.__cartUpdateBadge = window.updateCartBadge;
     window.__cartRenderPage = renderCartPage;

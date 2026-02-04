@@ -1,0 +1,12 @@
+.env
+venv/
+__pycache__/
+*.pyc
+db.sqlite3
+data/
+orders.log
+telegram_bot/orders.log
+staticfiles/
+.DS_Store
+
+.idea/

@@ -79,10 +79,6 @@
                 <!-- Title -->
                 <h1 class="product-title">{{ product.name }}</h1>
 
-                <!-- SKU -->
-                {% if product.sku %}
-                <div class="product-sku">Артикул: {{ product.sku }}</div>
-                {% endif %}
 
                 <!-- Short Description -->
                 {% if product.description %}
@@ -161,7 +157,7 @@
 
             <div class="products-grid">
                 {% for related in related_products %}
-                <article class="product-card">
+                <article class="product-card" data-product-url="{{ related.get_absolute_url }}">
                     <div class="product-card-image">
                         {% with main_image=related.get_main_image %}
                         {% if main_image %}
@@ -175,9 +171,6 @@
                         <h3 class="product-card-title">
                             <a href="{{ related.get_absolute_url }}">{{ related.name }}</a>
                         </h3>
-                        {% if related.sku %}
-                        <div class="product-card-sku">{{ related.sku }}</div>
-                        {% endif %}
                         <div class="product-card-footer">
                             <div class="product-price">
                                 {% if related.price %}

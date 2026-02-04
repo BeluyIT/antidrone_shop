@@ -5,6 +5,7 @@
 {% block content %}
 <div class="cart-page">
     <div class="container">
+        <div class="csrf-token" hidden>{% csrf_token %}</div>
         <h1 class="page-title">Кошик</h1>
         <div class="section-divider"></div>
 
@@ -12,10 +13,41 @@
             <div id="cart-items" class="cart-items" data-catalog-url="{% url 'catalog:category_list' %}"></div>
             <div id="cart-summary" class="cart-summary">
                 <div id="cart-total" class="cart-total">Разом: 0 грн</div>
-                <a class="btn btn-primary btn-checkout" href="https://t.me/antidrone_ukraine" data-telegram-target="antidrone_ukraine" onclick="return window.checkoutToTelegram(event)">Оформити замовлення</a>
+                <button class="btn btn-primary btn-checkout" type="button" data-checkout-start>Оформити замовлення</button>
                 <button class="btn btn-primary btn-clear-cart" data-cart-action="clear">Очистити кошик</button>
             </div>
         </div>
     </div>
 </div>
+
+<div id="checkout-modal" class="checkout-modal" hidden>
+    <div class="checkout-modal-backdrop" data-checkout-close></div>
+    <div class="checkout-modal-dialog" role="dialog" aria-modal="true" aria-labelledby="checkout-modal-title">
+        <button class="checkout-modal-close" type="button" aria-label="Закрити" data-checkout-close>
+            <i class="bi bi-x-lg"></i>
+        </button>
+        <div class="checkout-modal-header">
+            <div class="checkout-modal-icon" aria-hidden="true">
+                <svg viewBox="0 0 24 24" role="img" focusable="false">
+                    <path d="M12 2l7 3v6c0 5-3.4 9.2-7 10-3.6-.8-7-5-7-10V5l7-3z"></path>
+                </svg>
+            </div>
+            <h2 id="checkout-modal-title" class="checkout-modal-title">Підтвердження замовлення</h2>
+            <p class="checkout-modal-subtitle">Перевірте позиції та підтвердьте відправку.</p>
+        </div>
+        <div class="checkout-modal-body">
+            <div id="checkout-modal-items" class="checkout-modal-items"></div>
+        </div>
+        <div class="checkout-modal-footer">
+            <div id="checkout-modal-total" class="checkout-modal-total"></div>
+            <div id="checkout-modal-error" class="checkout-modal-error" hidden></div>
+            <div class="checkout-modal-actions">
+                <button class="btn btn-primary" type="button" data-checkout-cancel>Скасувати</button>
+                <button class="btn btn-primary btn-checkout-confirm" type="button" data-checkout-confirm>Підтвердити</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div id="checkout-toast" class="checkout-toast" hidden></div>
 {% endblock %}

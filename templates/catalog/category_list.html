@@ -1,0 +1,52 @@
+{% extends 'base.html' %}
+
+{% block title %}Каталог - ANTIDRONE.CC{% endblock %}
+
+{% block content %}
+<div class="category-page">
+    <div class="container">
+        <!-- Breadcrumbs -->
+        <nav class="breadcrumbs">
+            <span class="breadcrumb-item">
+                <a href="{% url 'catalog:index' %}">Головна</a>
+            </span>
+            <span class="breadcrumb-separator">/</span>
+            <span class="breadcrumb-item active">Каталог</span>
+        </nav>
+
+        <div class="category-header" style="margin-bottom: 3rem;">
+            <h1 class="category-title-main">Каталог обладнання</h1>
+        </div>
+
+        {% if categories %}
+        <div class="categories-grid">
+            {% for category in categories %}
+            <a href="{{ category.get_absolute_url }}" class="category-card">
+                <div class="category-icon">
+                    {% if category.slug == 'anteny' %}
+                    <i class="bi bi-broadcast-pin"></i>
+                    {% elif category.slug == 'moduli' %}
+                    <i class="bi bi-cpu"></i>
+                    {% else %}
+                    <i class="bi bi-box"></i>
+                    {% endif %}
+                </div>
+                <h3 class="category-title">{{ category.name }}</h3>
+                {% if category.description %}
+                <p class="category-description">{{ category.description|truncatewords:20 }}</p>
+                {% endif %}
+                <span class="category-count">{{ category.get_descendant_count }} підкатегорій</span>
+            </a>
+            {% endfor %}
+        </div>
+        {% else %}
+        <div class="no-products">
+            <div class="no-products-icon">
+                <i class="bi bi-inbox"></i>
+            </div>
+            <p class="no-products-text">Категорії поки не додані</p>
+        </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

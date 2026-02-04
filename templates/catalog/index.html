@@ -10,11 +10,23 @@
     <div class="hero-content">
         <h1 class="hero-title">ANTIDRONE<span class="accent">.CC</span></h1>
         <p class="hero-subtitle">Професійні системи протидії БПЛА</p>
-        <p class="hero-description">B2B рішення для виявлення та нейтралізації дронів. Зручне замовлення через Telegram.</p>
+        <p class="hero-description">B2B рішення для виявлення та нейтралізації дронів.</p>
+        <p class="hero-description">Зручне замовлення через Telegram.</p>
         <a href="{% url 'catalog:category_list' %}" class="btn btn-primary btn-lg">
             <i class="bi bi-grid-3x3-gap"></i>
             Переглянути каталог
         </a>
+    </div>
+</section>
+
+<!-- About -->
+<section class="section section-dark" id="about">
+    <div class="container">
+        <h2 class="section-title"><span>Про</span> нас</h2>
+        <div class="section-divider"></div>
+        <p>ANTIDRONE — професійні рішення протидії БПЛА.</p>
+        <p>Ми спеціалізуємось на обладнанні та комплектуючих для систем виявлення й протидії дронам: антени, модулі, RF-компоненти та вузли живлення.</p>
+        <p>Працюємо практично: підбираємо сумісні позиції під ваші частоти, типи підключень і сценарії використання — від стаціонарних систем до мобільних комплектів.</p>
     </div>
 </section>
 
@@ -27,7 +39,7 @@
 
         <div class="products-grid">
             {% for product in popular_products %}
-            <article class="product-card">
+            <article class="product-card" data-product-url="{{ product.get_absolute_url }}">
                 <div class="product-card-image">
                     {% with main_image=product.get_main_image %}
                     {% if main_image %}
@@ -42,9 +54,6 @@
                     <h3 class="product-card-title">
                         <a href="{{ product.get_absolute_url }}">{{ product.name }}</a>
                     </h3>
-                    {% if product.sku %}
-                    <div class="product-card-sku">{{ product.sku }}</div>
-                    {% endif %}
                     {% if product.description %}
                     <p class="product-card-description">{{ product.description|truncatewords:12 }}</p>
                     {% endif %}
@@ -73,7 +82,7 @@
 
         <div class="products-grid">
             {% for product in new_products %}
-            <article class="product-card">
+            <article class="product-card" data-product-url="{{ product.get_absolute_url }}">
                 <div class="product-card-image">
                     {% with main_image=product.get_main_image %}
                     {% if main_image %}
@@ -88,9 +97,6 @@
                     <h3 class="product-card-title">
                         <a href="{{ product.get_absolute_url }}">{{ product.name }}</a>
                     </h3>
-                    {% if product.sku %}
-                    <div class="product-card-sku">{{ product.sku }}</div>
-                    {% endif %}
                     {% if product.description %}
                     <p class="product-card-description">{{ product.description|truncatewords:12 }}</p>
                     {% endif %}
