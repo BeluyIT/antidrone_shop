@@ -1912,22 +1912,26 @@ body.modal-open {
 
 @keyframes bounce {
     0%, 100% { transform: translateY(0); }
-    50% { transform: translateY(-5px); }
+    50% { transform: translateY(-10px); }
 }
 
 .pulse {
-    animation: pulse 0.5s ease-in-out;
+    animation: pulse 0.5s ease-in-out !important;
 }
 
 .bounce {
-    animation: bounce 0.3s ease-in-out;
+    animation: bounce 0.3s ease-in-out !important;
 }
 
 .btn-added {
     background: var(--accent-primary) !important;
     color: var(--bg-primary) !important;
     border-color: var(--accent-primary) !important;
-    transition: all 0.3s ease;
+    transition: all 0.3s ease !important;
+}
+
+.btn-added i {
+    margin-right: 5px;
 }
 
 /* ============================================

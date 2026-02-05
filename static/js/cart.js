@@ -340,11 +340,12 @@ console.log('[cart] cart.js loaded; window.addToCart =', typeof window.addToCart
                 window.addToCart(addButton);
 
                 // Animation: Button "Added!" feedback
-                const originalText = addButton.textContent;
-                addButton.textContent = '✓ Додано!';
+                const originalText = addButton.innerHTML;
+                addButton.innerHTML = '<i class="bi bi-check"></i> Додано!';
                 addButton.classList.add('btn-added');
+                log('Animation triggered');
                 setTimeout(() => {
-                    addButton.textContent = originalText;
+                    addButton.innerHTML = originalText;
                     addButton.classList.remove('btn-added');
                 }, 1500);
 
