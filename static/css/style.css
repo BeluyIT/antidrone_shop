@@ -797,7 +797,7 @@ body.modal-open {
     position: relative;
     width: min(560px, calc(100vw - 32px));
     padding: 1.25rem;
-    max-height: min(90vh, calc(100dvh - 48px));
+    max-height: 75vh;
     overflow: hidden;
     background: rgba(20, 25, 20, 0.92);
     backdrop-filter: blur(8px);
@@ -905,7 +905,7 @@ body.modal-open {
     border-bottom: 1px solid var(--border-color);
     overflow-y: auto;
     min-height: 0;
-    max-height: 40vh;
+    max-height: 25vh;
 }
 
 .checkout-modal-items::-webkit-scrollbar {
