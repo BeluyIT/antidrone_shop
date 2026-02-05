@@ -797,7 +797,8 @@ body.modal-open {
     position: relative;
     width: min(560px, calc(100vw - 32px));
     padding: 1.25rem;
-    max-height: calc(100dvh - 48px);
+    max-height: min(90vh, calc(100dvh - 48px));
+    overflow: hidden;
     background: rgba(20, 25, 20, 0.92);
     backdrop-filter: blur(8px);
     border: 1px solid var(--border-color);
@@ -880,7 +881,7 @@ body.modal-open {
 
 .checkout-modal-body {
     min-height: 0;
-    flex: 1;
+    flex: 1 1 auto;
     display: flex;
     flex-direction: column;
     overflow-y: auto;
@@ -904,7 +905,7 @@ body.modal-open {
     border-bottom: 1px solid var(--border-color);
     overflow-y: auto;
     min-height: 0;
-    max-height: 45vh;
+    max-height: 40vh;
 }
 
 .checkout-modal-items::-webkit-scrollbar {

@@ -566,12 +566,20 @@ console.log('[cart] cart.js loaded; window.addToCart =', typeof window.addToCart
 
     // Mobile menu toggle
     const initMobileMenu = () => {
+        console.log('[Mobile Menu] Initializing...');
         const toggle = document.querySelector('.mobile-toggle');
         const mobileNav = document.getElementById('mobile-nav');
-        if (!toggle || !mobileNav) return;
+        console.log('[Mobile Menu] Elements:', { toggle, mobileNav });
+
+        if (!toggle || !mobileNav) {
+            console.error('[Mobile Menu] Elements not found!');
+            return;
+        }
 
         toggle.addEventListener('click', () => {
+            console.log('[Mobile Menu] Toggle clicked!');
             const isOpen = mobileNav.classList.toggle('is-open');
+            console.log('[Mobile Menu] Is open:', isOpen);
             toggle.classList.toggle('is-active', isOpen);
             toggle.setAttribute('aria-expanded', isOpen ? 'true' : 'false');
 
@@ -585,6 +593,23 @@ console.log('[cart] cart.js loaded; window.addToCart =', typeof window.addToCart
         // Close menu when clicking on a link
         mobileNav.addEventListener('click', (e) => {
             if (e.target.closest('a')) {
+                mobileNav.classList.remove('is-open');
+                toggle.classList.remove('is-active');
+                toggle.setAttribute('aria-expanded', 'false');
+                const icon = toggle.querySelector('i');
+                if (icon) {
+                    icon.classList.remove('bi-x-lg');
+                    icon.classList.add('bi-list');
+                }
+            }
+        });
+
+        // Close menu when clicking outside
+        document.addEventListener('click', (e) => {
+            if (mobileNav.classList.contains('is-open') &&
+                !mobileNav.contains(e.target) &&
+                !toggle.contains(e.target)) {
+                console.log('[Mobile Menu] Closing (clicked outside)');
                 mobileNav.classList.remove('is-open');
                 toggle.classList.remove('is-active');
                 toggle.setAttribute('aria-expanded', 'false');
