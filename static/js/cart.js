@@ -58,6 +58,7 @@ function addToCart(button) {
         sku: button.dataset.sku || '',
         price: Number(button.dataset.price) || 0,
         image: button.dataset.image || '',
+        url: button.dataset.url || '',
         qty: 1,
     };
     if (!item.id) return;
@@ -252,6 +253,9 @@ console.log('[cart] cart.js loaded; window.addToCart =', typeof window.addToCart
             if (!existing.image && item.image) {
                 existing.image = item.image;
             }
+            if (!existing.url && item.url) {
+                existing.url = item.url;
+            }
         } else {
             cart.items[item.id] = { ...item, qty: Number(item.qty) || 1 };
         }
@@ -324,11 +328,14 @@ console.log('[cart] cart.js loaded; window.addToCart =', typeof window.addToCart
             const thumb = item.image
                 ? `<img src="${item.image}" alt="${item.name || 'Товар'}">`
                 : `<div class="cart-thumb-placeholder"></div>`;
+            const nameHTML = item.name || 'Товар';
+            const linkOpen = item.url ? `<a href="${item.url}" class="cart-item-link">` : '';
+            const linkClose = item.url ? '</a>' : '';
             return `
                 <div class="cart-row">
-                    <div class="cart-cell cart-thumb">${thumb}</div>
+                    <div class="cart-cell cart-thumb">${linkOpen}${thumb}${linkClose}</div>
                     <div class="cart-cell">
-                        <div class="cart-title">${item.name || 'Товар'}</div>
+                        ${linkOpen}<div class="cart-title">${nameHTML}</div>${linkClose}
                     </div>
                     <div class="cart-cell cart-price">${formatPrice(price)} UAH</div>
                     <div class="cart-cell cart-qty">

@@ -112,6 +112,7 @@
                         data-sku="{{ product.sku|default:'' }}"
                         data-price="{{ product.price|floatformat:0|default:'0' }}"
                         data-image="{% with images=product.images.all %}{% if images %}{{ images.0.image.url }}{% else %}{% static 'images/placeholder.png' %}{% endif %}{% endwith %}"
+                        data-url="{{ product.get_absolute_url }}"
                         data-add-mode="direct"
                         onclick="window.addToCart(this)"
                     >
@@ -182,7 +183,8 @@
                                 data-name="{{ related.name }}"
                                 data-sku="{{ related.sku|default:'' }}"
                                 data-price="{{ related.price|floatformat:0|default:'0' }}"
-                                data-image="{% with main_image=related.get_main_image %}{% if main_image %}{{ main_image.image.url }}{% endif %}{% endwith %}">
+                                data-image="{% with main_image=related.get_main_image %}{% if main_image %}{{ main_image.image.url }}{% endif %}{% endwith %}"
+                                data-url="{{ related.get_absolute_url }}">
                                 <i class="bi bi-cart-plus"></i> В кошик
                             </button>
                         </div>

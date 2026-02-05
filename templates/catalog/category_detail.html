@@ -97,7 +97,8 @@
                                     data-name="{{ product.name }}"
                                     data-sku="{{ product.sku|default:'' }}"
                                     data-price="{{ product.price|floatformat:0|default:'0' }}"
-                                    data-image="{% with main_image=product.get_main_image %}{% if main_image %}{{ main_image.image.url }}{% endif %}{% endwith %}">
+                                    data-image="{% with main_image=product.get_main_image %}{% if main_image %}{{ main_image.image.url }}{% endif %}{% endwith %}"
+                                    data-url="{{ product.get_absolute_url }}">
                                     <i class="bi bi-cart-plus"></i> В кошик
                                 </button>
                             </div>
