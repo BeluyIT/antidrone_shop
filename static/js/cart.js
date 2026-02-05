@@ -96,49 +96,45 @@ function addToCart(button) {
         }
     }
 
-    // === ANIMATION START ===
+    showAddToCartAnimation(button);
+}
+
+function showAddToCartAnimation(btn) {
     console.log('[cart] Starting animation');
 
     // 1. Button animation - change text
-    const originalHTML = button.innerHTML;
-    button.innerHTML = '<i class="bi bi-check-lg"></i> Товар додано в кошик';
-    button.classList.add('btn-added');
-    button.disabled = true;
+    if (btn && btn.tagName === 'BUTTON') {
+        const originalHTML = btn.innerHTML;
+        btn.innerHTML = '<i class="bi bi-check-lg"></i> Додано!';
+        btn.classList.add('btn-added');
+        btn.disabled = true;
+
+        setTimeout(() => {
+            btn.classList.remove('btn-added');
+            btn.innerHTML = originalHTML;
+            btn.disabled = false;
+        }, 1500);
+    }
 
     // 2. Cart icon bounce animation
     const cartLink = document.querySelector('.header-cart');
-    const cartIcon = document.querySelector('.header-cart .bi-cart3');
-    console.log('[cart] Cart elements:', { cartLink, cartIcon });
-
     if (cartLink) {
         cartLink.classList.add('cart-bounce');
+        setTimeout(() => cartLink.classList.remove('cart-bounce'), 600);
     }
 
     // 3. Badge bounce
     const badge = document.getElementById('cartBadge');
     if (badge) {
         badge.classList.add('badge-bounce');
+        setTimeout(() => badge.classList.remove('badge-bounce'), 400);
     }
 
-    // 4. Reset after 3 seconds
-    setTimeout(() => {
-        button.innerHTML = originalHTML;
-        button.classList.remove('btn-added');
-        button.disabled = false;
-
-        if (cartLink) {
-            cartLink.classList.remove('cart-bounce');
-        }
-        if (badge) {
-            badge.classList.remove('badge-bounce');
-        }
-
-        console.log('[cart] Animation complete');
-    }, 3000);
-    // === ANIMATION END ===
+    console.log('[cart] Animation complete');
 }
 
 window.addToCart = addToCart;
+window.showAddToCartAnimation = showAddToCartAnimation;
 console.log('[cart] cart.js loaded; window.addToCart =', typeof window.addToCart);
 
 (() => {

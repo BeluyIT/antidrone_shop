@@ -63,7 +63,14 @@
                             <span class="product-price-current">{{ product.price|floatformat:0 }} UAH</span>
                             {% endif %}
                         </div>
-                        <a href="{{ product.get_absolute_url }}" class="btn btn-primary">Детальніше</a>
+                        <button type="button" class="btn btn-primary btn-sm js-add-to-cart"
+                            data-product-id="{{ product.id }}"
+                            data-name="{{ product.name }}"
+                            data-sku="{{ product.sku|default:'' }}"
+                            data-price="{{ product.price|floatformat:0|default:'0' }}"
+                            data-image="{% with main_image=product.get_main_image %}{% if main_image %}{{ main_image.image.url }}{% endif %}{% endwith %}">
+                            <i class="bi bi-cart-plus"></i> В кошик
+                        </button>
                     </div>
                 </div>
             </article>
@@ -106,7 +113,14 @@
                             <span class="product-price-current">{{ product.price|floatformat:0 }} UAH</span>
                             {% endif %}
                         </div>
-                        <a href="{{ product.get_absolute_url }}" class="btn btn-primary">Детальніше</a>
+                        <button type="button" class="btn btn-primary btn-sm js-add-to-cart"
+                            data-product-id="{{ product.id }}"
+                            data-name="{{ product.name }}"
+                            data-sku="{{ product.sku|default:'' }}"
+                            data-price="{{ product.price|floatformat:0|default:'0' }}"
+                            data-image="{% with main_image=product.get_main_image %}{% if main_image %}{{ main_image.image.url }}{% endif %}{% endwith %}">
+                            <i class="bi bi-cart-plus"></i> В кошик
+                        </button>
                     </div>
                 </div>
             </article>

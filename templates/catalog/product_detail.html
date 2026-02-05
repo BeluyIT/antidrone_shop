@@ -177,7 +177,14 @@
                                 <span class="product-price-current">{{ related.price|floatformat:0 }} UAH</span>
                                 {% endif %}
                             </div>
-                            <a href="{{ related.get_absolute_url }}" class="btn btn-primary">Детальніше</a>
+                            <button type="button" class="btn btn-primary btn-sm js-add-to-cart"
+                                data-product-id="{{ related.id }}"
+                                data-name="{{ related.name }}"
+                                data-sku="{{ related.sku|default:'' }}"
+                                data-price="{{ related.price|floatformat:0|default:'0' }}"
+                                data-image="{% with main_image=related.get_main_image %}{% if main_image %}{{ main_image.image.url }}{% endif %}{% endwith %}">
+                                <i class="bi bi-cart-plus"></i> В кошик
+                            </button>
                         </div>
                     </div>
                 </article>
