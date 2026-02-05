@@ -1905,22 +1905,27 @@ body.modal-open {
 /* ============================================
    CART ANIMATIONS
    ============================================ */
-@keyframes pulse {
-    0%, 100% { transform: scale(1); }
-    50% { transform: scale(1.2); }
+@keyframes pulse-animation {
+    0% { transform: scale(1); }
+    25% { transform: scale(1.15); }
+    50% { transform: scale(1); }
+    75% { transform: scale(1.15); }
+    100% { transform: scale(1); }
 }
 
-@keyframes bounce {
-    0%, 100% { transform: translateY(0); }
-    50% { transform: translateY(-10px); }
+@keyframes bounce-animation {
+    0%, 100% { transform: translateY(0) scale(1); }
+    25% { transform: translateY(-12px) scale(1.1); }
+    50% { transform: translateY(0) scale(1); }
+    75% { transform: translateY(-6px) scale(1.05); }
 }
 
-.pulse {
-    animation: pulse 0.5s ease-in-out !important;
+.pulse-animation {
+    animation: pulse-animation 0.6s ease-in-out !important;
 }
 
-.bounce {
-    animation: bounce 0.3s ease-in-out !important;
+.bounce-animation {
+    animation: bounce-animation 0.4s ease-in-out !important;
 }
 
 .btn-added {
@@ -1935,37 +1940,57 @@ body.modal-open {
 }
 
 /* ============================================
-   HERO BUTTON EFFECTS
+   HERO BUTTON NEON EFFECTS
    ============================================ */
-@keyframes subtle-pulse {
-    0%, 100% { box-shadow: 0 0 10px rgba(57, 255, 20, 0.2); }
-    50% { box-shadow: 0 0 20px rgba(57, 255, 20, 0.4); }
+@keyframes neon-glow {
+    0%, 100% {
+        box-shadow:
+            0 0 5px var(--accent-primary),
+            0 0 10px var(--accent-primary),
+            0 0 20px var(--accent-primary),
+            0 0 40px var(--accent-primary);
+    }
+    50% {
+        box-shadow:
+            0 0 10px var(--accent-primary),
+            0 0 20px var(--accent-primary),
+            0 0 40px var(--accent-primary),
+            0 0 80px var(--accent-primary);
+    }
+}
+
+@keyframes gradient-shift {
+    0% { background-position: 0% 50%; }
+    50% { background-position: 100% 50%; }
+    100% { background-position: 0% 50%; }
 }
 
 .hero .btn-primary {
     position: relative;
-    overflow: hidden;
-    animation: subtle-pulse 3s ease-in-out infinite;
-    padding-right: 2rem;
-}
-
-.hero .btn-primary::after {
-    content: '→';
-    position: absolute;
-    right: -20px;
-    opacity: 0;
+    overflow: visible;
+    animation: neon-glow 2s ease-in-out infinite;
     transition: all 0.3s ease;
 }
 
-.hero .btn-primary:hover {
-    box-shadow:
-        0 0 20px rgba(57, 255, 20, 0.4),
-        0 0 40px rgba(57, 255, 20, 0.2);
-    transform: translateY(-2px);
-    padding-right: 2.5rem;
+.hero .btn-primary::before {
+    content: '';
+    position: absolute;
+    inset: -2px;
+    background: linear-gradient(
+        45deg,
+        transparent,
+        var(--accent-primary),
+        transparent
+    );
+    background-size: 200% 200%;
+    animation: gradient-shift 3s linear infinite;
+    border-radius: inherit;
+    z-index: -1;
+    opacity: 0.5;
+    filter: blur(10px);
 }
 
-.hero .btn-primary:hover::after {
-    right: 1rem;
-    opacity: 1;
+.hero .btn-primary:hover {
+    transform: scale(1.05);
+    animation: neon-glow 0.5s ease-in-out infinite;
 }

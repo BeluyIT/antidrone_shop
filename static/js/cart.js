@@ -335,33 +335,45 @@ console.log('[cart] cart.js loaded; window.addToCart =', typeof window.addToCart
 
         const addButton = event.target.closest('.js-add-to-cart');
         if (addButton) {
+            console.log('[DEBUG] Add to cart button clicked');
+            console.log('[DEBUG] Button element:', addButton);
+
             if (addButton.dataset.addMode !== 'direct') {
                 log('add button click', addButton.dataset);
                 window.addToCart(addButton);
 
                 // Animation: Button "Added!" feedback
-                const originalText = addButton.innerHTML;
-                addButton.innerHTML = '<i class="bi bi-check"></i> Додано!';
+                const originalHTML = addButton.innerHTML;
+                console.log('[DEBUG] Original button HTML:', originalHTML);
+
                 addButton.classList.add('btn-added');
-                log('Animation triggered');
-                setTimeout(() => {
-                    addButton.innerHTML = originalText;
-                    addButton.classList.remove('btn-added');
-                }, 1500);
+                addButton.innerHTML = '<i class="bi bi-check-lg"></i> Додано!';
+                addButton.disabled = true;
+                console.log('[DEBUG] Button animation started');
 
                 // Animation: Cart icon pulse
-                const cartIcon = document.querySelector('.header-cart i, .header-action i.bi-cart3');
+                const cartIcon = document.querySelector('.header-cart, .header-cart i, .header-action');
+                console.log('[DEBUG] Cart icon element:', cartIcon);
                 if (cartIcon) {
-                    cartIcon.classList.add('pulse');
-                    setTimeout(() => cartIcon.classList.remove('pulse'), 500);
+                    cartIcon.classList.add('pulse-animation');
+                    setTimeout(() => cartIcon.classList.remove('pulse-animation'), 600);
                 }
 
                 // Animation: Badge bounce
-                const badge = document.getElementById('cartBadge');
+                const badge = document.querySelector('.cart-badge, #cartBadge');
+                console.log('[DEBUG] Badge element:', badge);
                 if (badge) {
-                    badge.classList.add('bounce');
-                    setTimeout(() => badge.classList.remove('bounce'), 300);
+                    badge.classList.add('bounce-animation');
+                    setTimeout(() => badge.classList.remove('bounce-animation'), 400);
                 }
+
+                // Reset button after 1.5s
+                setTimeout(() => {
+                    addButton.classList.remove('btn-added');
+                    addButton.innerHTML = originalHTML;
+                    addButton.disabled = false;
+                    console.log('[DEBUG] Button reset complete');
+                }, 1500);
             }
             return;
         }
