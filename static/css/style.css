@@ -1905,29 +1905,33 @@ body.modal-open {
 /* ============================================
    CART ANIMATIONS
    ============================================ */
-@keyframes pulse-animation {
-    0% { transform: scale(1); }
-    25% { transform: scale(1.15); }
-    50% { transform: scale(1); }
-    75% { transform: scale(1.15); }
-    100% { transform: scale(1); }
+
+/* Cart bounce - continuous jumping for 3 seconds */
+@keyframes cart-jump {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(-8px); }
 }
 
-@keyframes bounce-animation {
-    0%, 100% { transform: translateY(0) scale(1); }
-    25% { transform: translateY(-12px) scale(1.1); }
-    50% { transform: translateY(0) scale(1); }
-    75% { transform: translateY(-6px) scale(1.05); }
+/* Badge bounce */
+@keyframes badge-jump {
+    0%, 100% { transform: scale(1); }
+    50% { transform: scale(1.3); }
 }
 
-.pulse-animation {
-    animation: pulse-animation 0.6s ease-in-out !important;
+.cart-bounce {
+    animation: cart-jump 0.4s ease-in-out infinite !important;
 }
 
-.bounce-animation {
-    animation: bounce-animation 0.4s ease-in-out !important;
+.cart-bounce .bi-cart3 {
+    color: var(--accent-primary) !important;
 }
 
+.badge-bounce {
+    animation: badge-jump 0.4s ease-in-out infinite !important;
+    background: var(--accent-secondary) !important;
+}
+
+/* Button "added" state */
 .btn-added {
     background: var(--accent-primary) !important;
     color: var(--bg-primary) !important;
@@ -1936,7 +1940,7 @@ body.modal-open {
 }
 
 .btn-added i {
-    margin-right: 5px;
+    margin-right: 8px;
 }
 
 /* ============================================

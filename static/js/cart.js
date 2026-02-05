@@ -63,38 +63,79 @@ function addToCart(button) {
     if (!item.id) return;
     if (window.__cartAddItem) {
         window.__cartAddItem(item);
-        return;
-    }
-    let cart = {};
-    try {
-        cart = JSON.parse(localStorage.getItem(CART_KEY) || '{}') || {};
-    } catch (err) {
-        cart = {};
-    }
-    if (!cart.items || typeof cart.items !== 'object') {
-        cart.items = {};
-    }
-    const existing = cart.items[item.id];
-    if (existing) {
-        existing.qty = (Number(existing.qty) || 0) + 1;
-        if (!existing.image && item.image) {
-            existing.image = item.image;
-        }
     } else {
-        cart.items[item.id] = item;
+        let cart = {};
+        try {
+            cart = JSON.parse(localStorage.getItem(CART_KEY) || '{}') || {};
+        } catch (err) {
+            cart = {};
+        }
+        if (!cart.items || typeof cart.items !== 'object') {
+            cart.items = {};
+        }
+        const existing = cart.items[item.id];
+        if (existing) {
+            existing.qty = (Number(existing.qty) || 0) + 1;
+            if (!existing.image && item.image) {
+                existing.image = item.image;
+            }
+        } else {
+            cart.items[item.id] = item;
+        }
+        console.log('[cart] before save', cart);
+        localStorage.setItem(CART_KEY, JSON.stringify(cart));
+        console.log('[cart] after save', localStorage.getItem(CART_KEY));
+        if (window.__cartUpdateBadge) {
+            window.__cartUpdateBadge();
+        }
+        if (window.updateCartBadge) {
+            window.updateCartBadge();
+        }
+        if (window.__cartRenderPage) {
+            window.__cartRenderPage();
+        }
     }
-    console.log('[cart] before save', cart);
-    localStorage.setItem(CART_KEY, JSON.stringify(cart));
-    console.log('[cart] after save', localStorage.getItem(CART_KEY));
-    if (window.__cartUpdateBadge) {
-        window.__cartUpdateBadge();
+
+    // === ANIMATION START ===
+    console.log('[cart] Starting animation');
+
+    // 1. Button animation - change text
+    const originalHTML = button.innerHTML;
+    button.innerHTML = '<i class="bi bi-check-lg"></i> Товар додано в кошик';
+    button.classList.add('btn-added');
+    button.disabled = true;
+
+    // 2. Cart icon bounce animation
+    const cartLink = document.querySelector('.header-cart');
+    const cartIcon = document.querySelector('.header-cart .bi-cart3');
+    console.log('[cart] Cart elements:', { cartLink, cartIcon });
+
+    if (cartLink) {
+        cartLink.classList.add('cart-bounce');
     }
-    if (window.updateCartBadge) {
-        window.updateCartBadge();
+
+    // 3. Badge bounce
+    const badge = document.getElementById('cartBadge');
+    if (badge) {
+        badge.classList.add('badge-bounce');
     }
-    if (window.__cartRenderPage) {
-        window.__cartRenderPage();
-    }
+
+    // 4. Reset after 3 seconds
+    setTimeout(() => {
+        button.innerHTML = originalHTML;
+        button.classList.remove('btn-added');
+        button.disabled = false;
+
+        if (cartLink) {
+            cartLink.classList.remove('cart-bounce');
+        }
+        if (badge) {
+            badge.classList.remove('badge-bounce');
+        }
+
+        console.log('[cart] Animation complete');
+    }, 3000);
+    // === ANIMATION END ===
 }
 
 window.addToCart = addToCart;
@@ -335,45 +376,10 @@ console.log('[cart] cart.js loaded; window.addToCart =', typeof window.addToCart
 
         const addButton = event.target.closest('.js-add-to-cart');
         if (addButton) {
-            console.log('[DEBUG] Add to cart button clicked');
-            console.log('[DEBUG] Button element:', addButton);
-
+            // Only handle non-direct mode (direct mode uses onclick)
             if (addButton.dataset.addMode !== 'direct') {
                 log('add button click', addButton.dataset);
                 window.addToCart(addButton);
-
-                // Animation: Button "Added!" feedback
-                const originalHTML = addButton.innerHTML;
-                console.log('[DEBUG] Original button HTML:', originalHTML);
-
-                addButton.classList.add('btn-added');
-                addButton.innerHTML = '<i class="bi bi-check-lg"></i> Додано!';
-                addButton.disabled = true;
-                console.log('[DEBUG] Button animation started');
-
-                // Animation: Cart icon pulse
-                const cartIcon = document.querySelector('.header-cart, .header-cart i, .header-action');
-                console.log('[DEBUG] Cart icon element:', cartIcon);
-                if (cartIcon) {
-                    cartIcon.classList.add('pulse-animation');
-                    setTimeout(() => cartIcon.classList.remove('pulse-animation'), 600);
-                }
-
-                // Animation: Badge bounce
-                const badge = document.querySelector('.cart-badge, #cartBadge');
-                console.log('[DEBUG] Badge element:', badge);
-                if (badge) {
-                    badge.classList.add('bounce-animation');
-                    setTimeout(() => badge.classList.remove('bounce-animation'), 400);
-                }
-
-                // Reset button after 1.5s
-                setTimeout(() => {
-                    addButton.classList.remove('btn-added');
-                    addButton.innerHTML = originalHTML;
-                    addButton.disabled = false;
-                    console.log('[DEBUG] Button reset complete');
-                }, 1500);
             }
             return;
         }
