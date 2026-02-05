@@ -810,7 +810,6 @@ body.modal-open {
     opacity: 0;
     transform: translateY(12px) scale(0.98);
     transition: opacity 180ms ease, transform 180ms ease;
-    overflow: hidden;
 }
 
 .checkout-modal.is-open .checkout-modal-dialog {
@@ -876,6 +875,7 @@ body.modal-open {
 .checkout-modal-header {
     display: grid;
     gap: 0.5rem;
+    flex-shrink: 0;
 }
 
 .checkout-modal-body {
@@ -1017,7 +1017,11 @@ body.modal-open {
     .checkout-modal-dialog {
         width: calc(100vw - 20px);
         padding: 1rem;
-        max-height: 85vh;
+        max-height: calc(100dvh - 24px);
+    }
+
+    .checkout-modal-items {
+        max-height: 35vh;
     }
 
     .checkout-modal-actions {
