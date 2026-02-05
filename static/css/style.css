@@ -1901,3 +1901,67 @@ body.modal-open {
 .mb-3 { margin-bottom: 1.5rem; }
 .mb-4 { margin-bottom: 2rem; }
 .mb-5 { margin-bottom: 3rem; }
+
+/* ============================================
+   CART ANIMATIONS
+   ============================================ */
+@keyframes pulse {
+    0%, 100% { transform: scale(1); }
+    50% { transform: scale(1.2); }
+}
+
+@keyframes bounce {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(-5px); }
+}
+
+.pulse {
+    animation: pulse 0.5s ease-in-out;
+}
+
+.bounce {
+    animation: bounce 0.3s ease-in-out;
+}
+
+.btn-added {
+    background: var(--accent-primary) !important;
+    color: var(--bg-primary) !important;
+    border-color: var(--accent-primary) !important;
+    transition: all 0.3s ease;
+}
+
+/* ============================================
+   HERO BUTTON EFFECTS
+   ============================================ */
+@keyframes subtle-pulse {
+    0%, 100% { box-shadow: 0 0 10px rgba(57, 255, 20, 0.2); }
+    50% { box-shadow: 0 0 20px rgba(57, 255, 20, 0.4); }
+}
+
+.hero .btn-primary {
+    position: relative;
+    overflow: hidden;
+    animation: subtle-pulse 3s ease-in-out infinite;
+    padding-right: 2rem;
+}
+
+.hero .btn-primary::after {
+    content: '→';
+    position: absolute;
+    right: -20px;
+    opacity: 0;
+    transition: all 0.3s ease;
+}
+
+.hero .btn-primary:hover {
+    box-shadow:
+        0 0 20px rgba(57, 255, 20, 0.4),
+        0 0 40px rgba(57, 255, 20, 0.2);
+    transform: translateY(-2px);
+    padding-right: 2.5rem;
+}
+
+.hero .btn-primary:hover::after {
+    right: 1rem;
+    opacity: 1;
+}

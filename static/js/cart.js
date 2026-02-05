@@ -152,6 +152,27 @@ console.log('[cart] cart.js loaded; window.addToCart =', typeof window.addToCart
         renderCartPage();
     };
 
+    // Auto-cleanup: Set order timestamp
+    const setOrderTimestamp = () => {
+        localStorage.setItem('order_timestamp', Date.now());
+        log('Order timestamp set');
+    };
+
+    // Auto-cleanup: Check if cart should be cleared (20 minutes after order)
+    const checkAutoCleanCart = () => {
+        const orderTime = localStorage.getItem('order_timestamp');
+        if (!orderTime) return;
+
+        const elapsed = Date.now() - parseInt(orderTime);
+        const TWENTY_MINUTES = 20 * 60 * 1000; // 20 minutes in milliseconds
+
+        if (elapsed > TWENTY_MINUTES) {
+            clearCart();
+            localStorage.removeItem('order_timestamp');
+            log('Auto-cleaned cart after 20 minutes');
+        }
+    };
+
     const getTotalQty = (cart) => {
         return Object.values(cart.items).reduce((sum, item) => sum + (Number(item.qty) || 0), 0);
     };
@@ -317,6 +338,29 @@ console.log('[cart] cart.js loaded; window.addToCart =', typeof window.addToCart
             if (addButton.dataset.addMode !== 'direct') {
                 log('add button click', addButton.dataset);
                 window.addToCart(addButton);
+
+                // Animation: Button "Added!" feedback
+                const originalText = addButton.textContent;
+                addButton.textContent = '✓ Додано!';
+                addButton.classList.add('btn-added');
+                setTimeout(() => {
+                    addButton.textContent = originalText;
+                    addButton.classList.remove('btn-added');
+                }, 1500);
+
+                // Animation: Cart icon pulse
+                const cartIcon = document.querySelector('.header-cart i, .header-action i.bi-cart3');
+                if (cartIcon) {
+                    cartIcon.classList.add('pulse');
+                    setTimeout(() => cartIcon.classList.remove('pulse'), 500);
+                }
+
+                // Animation: Badge bounce
+                const badge = document.getElementById('cartBadge');
+                if (badge) {
+                    badge.classList.add('bounce');
+                    setTimeout(() => badge.classList.remove('bounce'), 300);
+                }
             }
             return;
         }
@@ -359,6 +403,7 @@ console.log('[cart] cart.js loaded; window.addToCart =', typeof window.addToCart
 
     document.addEventListener('DOMContentLoaded', () => {
         console.log('[cart] DOMContentLoaded fired');
+        checkAutoCleanCart();
         if (window.updateCartBadge) {
             window.updateCartBadge();
             console.log('[cart] Badge updated on DOMContentLoaded');
@@ -542,6 +587,7 @@ console.log('[cart] cart.js loaded; window.addToCart =', typeof window.addToCart
                     if (!result || !result.order_id) {
                         throw new Error('Сервер не повернув номер замовлення.');
                     }
+                    setOrderTimestamp();
                     closeCheckoutModal();
                     window.location.href = `https://t.me/antidrone_order_bot?start=${result.order_id}`;
                 } catch (err) {
