@@ -58,6 +58,12 @@ PAYMENT_METHOD = 6
 WAITING_PAYMENT_PROOF = 7
 
 STATE_KEY = "order_state"
+CANCEL_TEXT = "❌ Скасувати"
+
+MENU_NEW_ORDER = "📦 Нове замовлення"
+MENU_MANAGER = "💬 Менеджер"
+MENU_SITE = "🌐 Сайт"
+MENU_ORDER_SENT = "🛒 Замовлення"
 
 # ============================================
 # ORDER API
@@ -841,22 +847,22 @@ async def menu_handler(update: Update, context: ContextTypes.DEFAULT_TYPE) -> No
         )
         return
 
-    if text.startswith("🛒 Замовлення"):
+    if text.startswith(MENU_ORDER_SENT):
         await update.message.reply_text(
             f"✅ Отримано! Менеджер зв'яжеться. {MANAGER_USERNAME}",
             reply_markup=build_start_keyboard()
         )
         return
 
-    if text == "📦 Нове замовлення":
+    if text == MENU_NEW_ORDER:
         await update.message.reply_text(f"🛒 Перейдіть на сайт {SITE_URL}, додайте товари в кошик і натисніть «Оформити»", reply_markup=build_site_keyboard())
         return
 
-    if text == "💬 Менеджер":
+    if text == MENU_MANAGER:
         await update.message.reply_text(f"📞 Менеджер: {MANAGER_USERNAME}")
         return
 
-    if text == "🌐 Сайт":
+    if text == MENU_SITE:
         await update.message.reply_text("🌐 Сайт:", reply_markup=build_site_keyboard())
         return
 
@@ -870,28 +876,25 @@ async def text_router(update: Update, context: ContextTypes.DEFAULT_TYPE) -> Non
 
     logger.info(f"text_router: state={state}, text='{text[:30]}...'")
 
-    if text == "❌ Скасувати":
+    if text == CANCEL_TEXT:
         await handle_cancel(update, context)
         return
 
-    if state == ASK_NAME:
-        await handle_name(update, context)
-    elif state == ASK_SURNAME:
-        await handle_surname(update, context)
-    elif state == ASK_PHONE:
-        await handle_phone(update, context)
-    elif state == ASK_CITY:
-        await handle_city(update, context)
-    elif state == ASK_BRANCH:
-        await handle_branch(update, context)
-    elif state == CONFIRM_DATA:
-        await handle_confirmation(update, context)
-    elif state == PAYMENT_METHOD:
-        await handle_payment_choice(update, context)
-    elif state == WAITING_PAYMENT_PROOF:
-        await handle_payment_proof(update, context)
-    else:
-        await menu_handler(update, context)
+    state_handlers = {
+        ASK_NAME: handle_name,
+        ASK_SURNAME: handle_surname,
+        ASK_PHONE: handle_phone,
+        ASK_CITY: handle_city,
+        ASK_BRANCH: handle_branch,
+        CONFIRM_DATA: handle_confirmation,
+        PAYMENT_METHOD: handle_payment_choice,
+        WAITING_PAYMENT_PROOF: handle_payment_proof,
+    }
+    handler = state_handlers.get(state)
+    if handler:
+        await handler(update, context)
+        return
+    await menu_handler(update, context)
 
 
 async def photo_handler(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
