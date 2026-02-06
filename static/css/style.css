@@ -738,6 +738,28 @@ h1, h2, h3, h4, h5, h6 {
     background: var(--accent-primary);
 }
 
+/* Empty cart / order sent message */
+.empty-cart-message {
+    text-align: center;
+    padding: 4rem 2rem;
+}
+
+.empty-cart-message h2 {
+    color: var(--accent-primary);
+    margin-bottom: 1rem;
+    font-size: 2rem;
+}
+
+.empty-cart-message p {
+    color: var(--text-secondary);
+    margin-bottom: 2rem;
+    font-size: 1.1rem;
+}
+
+.empty-cart-message .btn {
+    display: inline-block;
+}
+
 /* ============================================
    CHECKOUT MODAL
    ============================================ */

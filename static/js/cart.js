@@ -437,10 +437,48 @@ console.log('[cart] cart.js loaded; window.addToCart =', typeof window.addToCart
         }
     };
 
+    // Check if user recently sent an order (e.g. returning from bot tab)
+    const checkRecentOrder = () => {
+        const orderSent = localStorage.getItem('order_sent');
+        const orderTime = localStorage.getItem('order_time');
+
+        if (orderSent && orderTime) {
+            const elapsed = Date.now() - parseInt(orderTime);
+            const FIVE_MINUTES = 5 * 60 * 1000;
+
+            if (elapsed < FIVE_MINUTES) {
+                log('Recently sent order, cart remains cleared');
+                if (window.updateCartBadge) {
+                    window.updateCartBadge();
+                }
+                // If on cart page, show success message
+                const cartContainer = document.getElementById('cart-items');
+                if (cartContainer) {
+                    const cart = getCart();
+                    const items = Object.values(cart.items);
+                    if (!items.length) {
+                        cartContainer.innerHTML = `
+                            <div class="empty-cart-message">
+                                <h2>Замовлення відправлено!</h2>
+                                <p>Кошик очищено. Перевірте Telegram для продовження.</p>
+                                <a href="/" class="btn btn-primary">На головну</a>
+                            </div>
+                        `;
+                    }
+                }
+            } else {
+                // Remove stale flags
+                localStorage.removeItem('order_sent');
+                localStorage.removeItem('order_time');
+            }
+        }
+    };
+
     document.addEventListener('DOMContentLoaded', () => {
         console.log('[cart] DOMContentLoaded fired');
         checkConfirmedOrder();
         checkAutoCleanCart();
+        checkRecentOrder();
         if (window.updateCartBadge) {
             window.updateCartBadge();
             console.log('[cart] Badge updated on DOMContentLoaded');
@@ -624,10 +662,38 @@ console.log('[cart] cart.js loaded; window.addToCart =', typeof window.addToCart
                     if (!result || !result.order_id) {
                         throw new Error('Сервер не повернув номер замовлення.');
                     }
+
+                    const botUrl = `https://t.me/antidrone_order_bot?start=${result.order_id}`;
+
+                    // 1. Clear cart BEFORE opening bot
                     clearCart();
-                    log('Order confirmed, cart cleared');
+                    localStorage.setItem('order_sent', 'true');
+                    localStorage.setItem('order_time', String(Date.now()));
+                    log('Cart cleared before opening bot');
+
+                    // 2. Close modal
                     closeCheckoutModal();
-                    window.location.href = `https://t.me/antidrone_order_bot?start=${result.order_id}`;
+
+                    // 3. Update badge immediately
+                    if (window.updateCartBadge) {
+                        window.updateCartBadge();
+                    }
+
+                    // 4. If on cart page, show success message
+                    const cartContainer = document.getElementById('cart-items');
+                    if (cartContainer) {
+                        cartContainer.innerHTML = `
+                            <div class="empty-cart-message">
+                                <h2>Замовлення відправлено!</h2>
+                                <p>Кошик очищено. Перевірте Telegram для продовження.</p>
+                                <a href="/" class="btn btn-primary">На головну</a>
+                            </div>
+                        `;
+                    }
+
+                    // 5. Open bot in new tab LAST
+                    window.open(botUrl, '_blank', 'noopener');
+                    log('Order sent to bot, cart cleared, UI updated');
                 } catch (err) {
                     const errorBox = document.getElementById('checkout-modal-error');
                     if (errorBox) {
