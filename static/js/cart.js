@@ -495,18 +495,39 @@ log('[cart] cart.js loaded; window.addToCart =', typeof window.addToCart);
                     const cart = getCart();
                     const items = Object.values(cart.items);
                     if (!items.length) {
-                        cartContainer.innerHTML = `
-                            <div style="min-height: 50vh; display: flex; align-items: center; justify-content: center; text-align: center; padding: 3rem 1.5rem;">
-                                <div>
-                                    <h2 style="margin-bottom: 0.75rem;">✅ Замовлення успішно надіслане</h2>
-                                    <p style="margin-bottom: 1.5rem;">Перевірте Telegram для продовження.</p>
-                                    <div style="display: flex; gap: 0.75rem; justify-content: center; flex-wrap: wrap;">
-                                        <a href="https://t.me/antidrone_order_bot" target="_blank" rel="noopener" class="btn btn-primary">Відкрити Telegram</a>
-                                        <a href="/" class="btn btn-primary">На головну</a>
-                                    </div>
-                                </div>
-                            </div>
-                        `;
+                        cartContainer.innerHTML = '';
+                        try {
+                            const modal = document.getElementById('checkout-modal');
+                            if (modal) {
+                                const title = modal.querySelector('#checkout-modal-title');
+                                const subtitle = modal.querySelector('.checkout-modal-subtitle');
+                                const itemsContainer = modal.querySelector('#checkout-modal-items');
+                                const totalContainer = modal.querySelector('#checkout-modal-total');
+                                const errorBox = modal.querySelector('#checkout-modal-error');
+                                const actions = modal.querySelector('.checkout-modal-actions');
+
+                                if (title) title.textContent = '✅ Замовлення успішно надіслане';
+                                if (subtitle) subtitle.textContent = 'Перевірте Telegram для продовження.';
+                                if (itemsContainer) itemsContainer.innerHTML = '';
+                                if (totalContainer) totalContainer.textContent = '';
+                                if (errorBox) {
+                                    errorBox.textContent = '';
+                                    errorBox.setAttribute('hidden', '');
+                                }
+                                if (actions) {
+                                    actions.innerHTML = `
+                                        <a class="btn btn-primary" href="https://t.me/antidrone_order_bot" target="_blank" rel="noopener">Відкрити Telegram</a>
+                                        <a class="btn btn-primary" href="/">На головну</a>
+                                    `;
+                                }
+
+                                modal.removeAttribute('hidden');
+                                modal.classList.add('is-open');
+                                document.body.classList.add('modal-open');
+                            }
+                        } catch (err) {
+                            // ignore
+                        }
                     }
                 }
             } else {
@@ -762,26 +783,42 @@ log('[cart] cart.js loaded; window.addToCart =', typeof window.addToCart);
                 console.error('[Cart] ❌ Failed to close modal:', err);
             }
 
+            const showSuccessModal = () => {
+                const modal = document.getElementById('checkout-modal');
+                if (!modal) return;
+                const title = modal.querySelector('#checkout-modal-title');
+                const subtitle = modal.querySelector('.checkout-modal-subtitle');
+                const itemsContainer = modal.querySelector('#checkout-modal-items');
+                const totalContainer = modal.querySelector('#checkout-modal-total');
+                const errorBox = modal.querySelector('#checkout-modal-error');
+                const actions = modal.querySelector('.checkout-modal-actions');
+
+                if (title) title.textContent = '✅ Замовлення успішно надіслане';
+                if (subtitle) subtitle.textContent = 'Перевірте Telegram для продовження.';
+                if (itemsContainer) itemsContainer.innerHTML = '';
+                if (totalContainer) totalContainer.textContent = '';
+                if (errorBox) {
+                    errorBox.textContent = '';
+                    errorBox.setAttribute('hidden', '');
+                }
+                if (actions) {
+                    actions.innerHTML = `
+                        <a class="btn btn-primary" href="https://t.me/antidrone_order_bot" target="_blank" rel="noopener">Відкрити Telegram</a>
+                        <a class="btn btn-primary" href="/">На головну</a>
+                    `;
+                }
+
+                modal.removeAttribute('hidden');
+                modal.classList.add('is-open');
+                document.body.classList.add('modal-open');
+            };
+
             if (window.location.pathname.includes('/cart')) {
                 try {
-                    const cartContainer = document.querySelector('.cart-container, .cart-items, main');
-                    if (cartContainer) {
-                        cartContainer.innerHTML = `
-                            <div style="min-height: 50vh; display: flex; align-items: center; justify-content: center; text-align: center; padding: 4rem 2rem;">
-                                <div>
-                                    <h2 style="color: #39ff14; margin-bottom: 1rem;">✅ Замовлення успішно надіслане</h2>
-                                    <p style="margin-bottom: 2rem;">Перевірте Telegram для продовження.</p>
-                                    <div style="display: flex; gap: 0.75rem; justify-content: center; flex-wrap: wrap;">
-                                        <a href="https://t.me/antidrone_order_bot" target="_blank" rel="noopener" style="display: inline-block; padding: 12px 24px; background: #39ff14; color: #0a0f0a; text-decoration: none; border-radius: 5px; font-weight: 600;">Відкрити Telegram</a>
-                                        <a href="/" style="display: inline-block; padding: 12px 24px; background: #39ff14; color: #0a0f0a; text-decoration: none; border-radius: 5px; font-weight: 600;">На головну</a>
-                                    </div>
-                                </div>
-                            </div>
-                        `;
-                        log('[Cart] ✅ Cart page UI updated');
-                    }
+                    showSuccessModal();
+                    log('[Cart] ✅ Success modal shown');
                 } catch (err) {
-                    console.error('[Cart] ❌ Failed to update UI:', err);
+                    console.error('[Cart] ❌ Failed to show success modal:', err);
                 }
             }
 
@@ -790,25 +827,15 @@ log('[cart] cart.js loaded; window.addToCart =', typeof window.addToCart);
 
             log('[Cart] Opening bot:', botUrl);
 
-            let openedInSameTab = false;
             try {
                 if (botPopup && !botPopup.closed) {
                     botPopup.location.href = botUrl;
                 } else {
                     // Popup blocked: fall back to same-tab navigation.
-                    openedInSameTab = true;
                     window.location.href = botUrl;
                 }
             } catch (err) {
-                openedInSameTab = true;
                 window.location.href = botUrl;
-            }
-
-            if (!openedInSameTab && window.location.pathname !== '/') {
-                setTimeout(() => {
-                    log('[Cart] Redirecting to home...');
-                    window.location.href = '/';
-                }, 1000);
             }
         } catch (err) {
             const message = err instanceof Error ? err.message : 'Не вдалося оформити замовлення.';
