@@ -57,8 +57,19 @@ CATEGORIES = {
             {'name': 'Глушителі', 'slug': 'glushiteli', 'description': 'Модулі для подавлення сигналів керування'},
             {'name': 'SDR Модулі', 'slug': 'sdr-moduli', 'description': 'Software Defined Radio модулі'},
             {'name': 'Підсилювачі', 'slug': 'pidsylyuvachi', 'description': 'Підсилювачі потужності сигналу'},
+            {'name': 'DC/DC', 'slug': 'dc-dc', 'description': 'DC/DC перетворювачі для живлення модулів'},
         ]
-    }
+    },
+    'Портативні детектори': {
+        'slug': 'portatyvni-detektory',
+        'description': 'Портативні детектори для швидкого виявлення БПЛА',
+        'children': [],
+    },
+    'Антидронові рушниці': {
+        'slug': 'antydronovi-rushnytsi',
+        'description': 'Ручні комплекси подавлення та нейтралізації БПЛА',
+        'children': [],
+    },
 }
 
 
@@ -439,6 +450,188 @@ PRODUCTS = {
 }
 
 
+GENERATED_TARGETS = {
+    # Antennas (total 50)
+    'directional': 14,
+    'omni': 12,
+    'patch': 12,
+    'panel': 12,
+    # Modules (total 40)
+    'rf-detektory': 9,
+    'glushiteli': 8,
+    'sdr-moduli': 8,
+    'pidsylyuvachi': 7,
+    'dc-dc': 8,
+    # New root categories
+    'portatyvni-detektory': 8,
+    'antydronovi-rushnytsi': 8,
+}
+
+GENERATED_META = {
+    'directional': {
+        'base_name': 'Directional Antenna',
+        'sku_prefix': 'ANT-DIR',
+        'price_range': (2500, 7500),
+        'specs': lambda: {
+            'Частота': f"{random.choice([433, 900, 2400, 5800])} MHz",
+            'Підсилення': f"{random.randint(12, 26)} dBi",
+            'Потужність': f"{random.randint(50, 250)} W",
+            'Роз\'єм': random.choice(['N-type Female', 'N-type Male']),
+            'IP рейтинг': random.choice(['IP65', 'IP66', 'IP67']),
+        },
+    },
+    'omni': {
+        'base_name': 'Omni Antenna',
+        'sku_prefix': 'ANT-OMNI',
+        'price_range': (1200, 3600),
+        'specs': lambda: {
+            'Частота': random.choice(['2400-2500 MHz', '5725-5875 MHz', '2400/5800 MHz']),
+            'Підсилення': f"{random.randint(6, 12)} dBi",
+            'Потужність': f"{random.randint(20, 80)} W",
+            'Матеріал': random.choice(['Фібергласс', 'Алюміній']),
+            'IP рейтинг': random.choice(['IP54', 'IP65', 'IP67']),
+        },
+    },
+    'patch': {
+        'base_name': 'Patch Antenna',
+        'sku_prefix': 'ANT-PATCH',
+        'price_range': (1600, 3200),
+        'specs': lambda: {
+            'Частота': random.choice(['433 MHz', '900 MHz', '2400 MHz']),
+            'Підсилення': f"{random.randint(6, 16)} dBi",
+            'Потужність': f"{random.randint(25, 100)} W",
+            'Розміри': random.choice(['200×200×40 мм', '250×250×45 мм', '300×300×50 мм']),
+            'IP рейтинг': random.choice(['IP55', 'IP65']),
+        },
+    },
+    'panel': {
+        'base_name': 'Panel Antenna',
+        'sku_prefix': 'ANT-PANEL',
+        'price_range': (3500, 6500),
+        'specs': lambda: {
+            'Частота': random.choice(['2400-2500 MHz', '5150-5850 MHz']),
+            'Підсилення': f"{random.randint(18, 24)} dBi",
+            'Кут випромінювання': random.choice(['60°×15°', '90°×10°']),
+            'Потужність': f"{random.randint(50, 150)} W",
+            'IP рейтинг': random.choice(['IP66', 'IP67']),
+        },
+    },
+    'rf-detektory': {
+        'base_name': 'RF Detector Module',
+        'sku_prefix': 'MOD-RF',
+        'price_range': (2800, 6800),
+        'specs': lambda: {
+            'Діапазон': random.choice(['400-6000 MHz', '700-5800 MHz']),
+            'Чутливість': f"-{random.randint(65, 90)} dBm",
+            'Інтерфейс': random.choice(['UART', 'SPI', 'I2C']),
+            'Живлення': random.choice(['5V', '12V']),
+        },
+    },
+    'glushiteli': {
+        'base_name': 'Jammer Module',
+        'sku_prefix': 'MOD-JAM',
+        'price_range': (5000, 15000),
+        'specs': lambda: {
+            'Діапазон': random.choice(['900/2400/5800 MHz', '400-6000 MHz']),
+            'Потужність': f"{random.randint(10, 50)} W",
+            'Охолодження': random.choice(['Пасивне', 'Активне']),
+            'Живлення': random.choice(['12V', '24V']),
+        },
+    },
+    'sdr-moduli': {
+        'base_name': 'SDR Module',
+        'sku_prefix': 'MOD-SDR',
+        'price_range': (3500, 12000),
+        'specs': lambda: {
+            'Частота': random.choice(['1-6000 MHz', '10-3500 MHz']),
+            'Інтерфейс': random.choice(['USB 3.0', 'PCIe', 'Ethernet']),
+            'Ширина смуги': random.choice(['10 MHz', '20 MHz', '40 MHz']),
+            'Живлення': random.choice(['5V', '12V']),
+        },
+    },
+    'pidsylyuvachi': {
+        'base_name': 'Power Amplifier',
+        'sku_prefix': 'MOD-AMP',
+        'price_range': (4200, 11000),
+        'specs': lambda: {
+            'Частота': random.choice(['900 MHz', '2400 MHz', '5800 MHz']),
+            'Підсилення': f"{random.randint(20, 40)} dB",
+            'Потужність': f"{random.randint(10, 80)} W",
+            'Живлення': random.choice(['12V', '24V']),
+        },
+    },
+    'dc-dc': {
+        'base_name': 'DC/DC Converter',
+        'sku_prefix': 'MOD-DCDC',
+        'price_range': (600, 2200),
+        'specs': lambda: {
+            'Вхідна напруга': random.choice(['9-36V', '12-48V', '18-72V']),
+            'Вихідна напруга': random.choice(['5V', '9V', '12V', '24V']),
+            'Потужність': f"{random.randint(30, 200)} W",
+            'ККД': f"{random.randint(85, 95)}%",
+        },
+    },
+    'portatyvni-detektory': {
+        'base_name': 'Portable Detector',
+        'sku_prefix': 'DET-PRT',
+        'price_range': (15000, 45000),
+        'specs': lambda: {
+            'Діапазон': random.choice(['400-6000 MHz', '700-5800 MHz']),
+            'Дальність': f"до {random.randint(1, 5)} км",
+            'Час роботи': f"{random.randint(2, 8)} год",
+            'Живлення': random.choice(['Li-Ion', 'LiFePO4']),
+        },
+    },
+    'antydronovi-rushnytsi': {
+        'base_name': 'Anti-Drone Rifle',
+        'sku_prefix': 'GUN-AD',
+        'price_range': (80000, 180000),
+        'specs': lambda: {
+            'Діапазони подавлення': random.choice(['900/2400/5800 MHz', '700/900/1800/2400/5800 MHz']),
+            'Дальність': f"{random.randint(1, 3)} км",
+            'Живлення': random.choice(['АКБ', 'АКБ + мережа']),
+            'Маса': f"{random.uniform(3.5, 6.5):.1f} кг",
+        },
+    },
+}
+
+
+def create_generated_products(category, target_count):
+    meta = GENERATED_META[category.slug]
+    base_name = meta['base_name']
+    sku_prefix = meta['sku_prefix']
+    price_range = meta['price_range']
+    specs_builder = meta['specs']
+
+    for index in range(1, target_count + 1):
+        name = f"{base_name} {index:02d}"
+        price = Decimal(random.randint(*price_range))
+        old_price = None
+        if random.random() < 0.25:
+            discount_percent = random.randint(15, 30)
+            old_price = price * Decimal(100 + discount_percent) / Decimal(100)
+            old_price = old_price.quantize(Decimal('1'))
+
+        is_popular = random.random() < 0.3
+        is_new = random.random() < 0.25
+
+        Product.objects.create(
+            category=category,
+            name=name,
+            slug=f"{make_slug(base_name)}-{index:02d}",
+            sku=f"{sku_prefix}-{index:03d}",
+            description=f"{base_name} для тестування каталогу",
+            full_description=format_full_description(
+                f"{base_name} для тестування каталогу",
+                specs_builder()
+            ),
+            price=price,
+            old_price=old_price,
+            is_available=True,
+            is_popular=is_popular,
+            is_new=is_new,
+        )
+
 def format_full_description(description, specs):
     """Format full product description with specifications."""
     lines = [description, '', 'Технічні характеристики:', '']
@@ -483,6 +676,7 @@ class Command(BaseCommand):
                 is_active=True,
             )
             self.stdout.write(self.style.SUCCESS(f'Created category: {parent_name}'))
+            category_map[parent_data['slug']] = parent_cat
 
             for child_data in parent_data['children']:
                 child_cat = Category.objects.create(
@@ -498,7 +692,7 @@ class Command(BaseCommand):
         # Rebuild MPTT tree
         Category.objects.rebuild()
 
-        # Create products
+        # Create products (static list)
         self.stdout.write('\nCreating products...')
         product_count = 0
 
@@ -554,5 +748,27 @@ class Command(BaseCommand):
                     self.style.SUCCESS(f'Created product: {product.name} - {price} грн{flags_str}')
                 )
 
+        # Create generated products to hit target counts per category
+        self.stdout.write('\nGenerating additional products...')
+        for category_slug, target_total in GENERATED_TARGETS.items():
+            category = category_map.get(category_slug)
+            if not category:
+                self.stdout.write(self.style.ERROR(f'Category not found for generation: {category_slug}'))
+                continue
+            existing_count = Product.objects.filter(category=category).count()
+            to_create = max(target_total - existing_count, 0)
+            if to_create:
+                create_generated_products(category, to_create)
+                product_count += to_create
+                self.stdout.write(
+                    self.style.SUCCESS(
+                        f'Generated {to_create} products for {category.name} (total {target_total})'
+                    )
+                )
+
         self.stdout.write('')
-        self.stdout.write(self.style.SUCCESS(f'Successfully created {len(category_map) + 2} categories and {product_count} products!'))
+        total_categories = Category.objects.count()
+        total_products = Product.objects.count()
+        self.stdout.write(self.style.SUCCESS(
+            f'Successfully created {total_categories} categories and {total_products} products!'
+        ))
