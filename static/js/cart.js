@@ -497,34 +497,7 @@ log('[cart] cart.js loaded; window.addToCart =', typeof window.addToCart);
                     if (!items.length) {
                         cartContainer.innerHTML = '';
                         try {
-                            const modal = document.getElementById('checkout-modal');
-                            if (modal) {
-                                const title = modal.querySelector('#checkout-modal-title');
-                                const subtitle = modal.querySelector('.checkout-modal-subtitle');
-                                const itemsContainer = modal.querySelector('#checkout-modal-items');
-                                const totalContainer = modal.querySelector('#checkout-modal-total');
-                                const errorBox = modal.querySelector('#checkout-modal-error');
-                                const actions = modal.querySelector('.checkout-modal-actions');
-
-                                if (title) title.textContent = '✅ Замовлення успішно надіслане';
-                                if (subtitle) subtitle.textContent = 'Перевірте Telegram для продовження.';
-                                if (itemsContainer) itemsContainer.innerHTML = '';
-                                if (totalContainer) totalContainer.textContent = '';
-                                if (errorBox) {
-                                    errorBox.textContent = '';
-                                    errorBox.setAttribute('hidden', '');
-                                }
-                                if (actions) {
-                                    actions.innerHTML = `
-                                        <a class="btn btn-primary" href="https://t.me/antidrone_order_bot" target="_blank" rel="noopener">Відкрити Telegram</a>
-                                        <a class="btn btn-primary" href="/">На головну</a>
-                                    `;
-                                }
-
-                                modal.removeAttribute('hidden');
-                                modal.classList.add('is-open');
-                                document.body.classList.add('modal-open');
-                            }
+                            renderSuccessModal({ showTelegramLink: true });
                         } catch (err) {
                             // ignore
                         }
@@ -676,6 +649,45 @@ log('[cart] cart.js loaded; window.addToCart =', typeof window.addToCart);
         return response.json();
     };
 
+    const renderSuccessModal = (options = {}) => {
+        const { showTelegramLink = true } = options;
+        const modal = document.getElementById('checkout-modal');
+        if (!modal) return;
+        const title = modal.querySelector('#checkout-modal-title');
+        const subtitle = modal.querySelector('.checkout-modal-subtitle');
+        const itemsContainer = modal.querySelector('#checkout-modal-items');
+        const totalContainer = modal.querySelector('#checkout-modal-total');
+        const errorBox = modal.querySelector('#checkout-modal-error');
+        const actions = modal.querySelector('.checkout-modal-actions');
+
+        if (title) title.textContent = '✅ Замовлення успішно надіслане';
+        if (subtitle) {
+            subtitle.textContent = showTelegramLink
+                ? 'Перевірте Telegram для продовження.'
+                : 'Telegram вже відкрито у новій вкладці.';
+        }
+        if (itemsContainer) itemsContainer.innerHTML = '';
+        if (totalContainer) totalContainer.textContent = '';
+        if (errorBox) {
+            errorBox.textContent = '';
+            errorBox.setAttribute('hidden', '');
+        }
+        if (actions) {
+            actions.innerHTML = showTelegramLink
+                ? `
+                    <a class="btn btn-primary" href="https://t.me/antidrone_order_bot" target="_blank" rel="noopener">Відкрити Telegram</a>
+                    <a class="btn btn-primary" href="/">На головну</a>
+                  `
+                : `
+                    <a class="btn btn-primary" href="/">На головну</a>
+                  `;
+        }
+
+        modal.removeAttribute('hidden');
+        modal.classList.add('is-open');
+        document.body.classList.add('modal-open');
+    };
+
     const startCheckout = () => {
         const cart = getCart();
         const items = Object.values(cart.items || {});
@@ -783,39 +795,10 @@ log('[cart] cart.js loaded; window.addToCart =', typeof window.addToCart);
                 console.error('[Cart] ❌ Failed to close modal:', err);
             }
 
-            const showSuccessModal = () => {
-                const modal = document.getElementById('checkout-modal');
-                if (!modal) return;
-                const title = modal.querySelector('#checkout-modal-title');
-                const subtitle = modal.querySelector('.checkout-modal-subtitle');
-                const itemsContainer = modal.querySelector('#checkout-modal-items');
-                const totalContainer = modal.querySelector('#checkout-modal-total');
-                const errorBox = modal.querySelector('#checkout-modal-error');
-                const actions = modal.querySelector('.checkout-modal-actions');
-
-                if (title) title.textContent = '✅ Замовлення успішно надіслане';
-                if (subtitle) subtitle.textContent = 'Перевірте Telegram для продовження.';
-                if (itemsContainer) itemsContainer.innerHTML = '';
-                if (totalContainer) totalContainer.textContent = '';
-                if (errorBox) {
-                    errorBox.textContent = '';
-                    errorBox.setAttribute('hidden', '');
-                }
-                if (actions) {
-                    actions.innerHTML = `
-                        <a class="btn btn-primary" href="https://t.me/antidrone_order_bot" target="_blank" rel="noopener">Відкрити Telegram</a>
-                        <a class="btn btn-primary" href="/">На головну</a>
-                    `;
-                }
-
-                modal.removeAttribute('hidden');
-                modal.classList.add('is-open');
-                document.body.classList.add('modal-open');
-            };
-
             if (window.location.pathname.includes('/cart')) {
                 try {
-                    showSuccessModal();
+                    const popupOpened = !!botPopup;
+                    renderSuccessModal({ showTelegramLink: !popupOpened });
                     log('[Cart] ✅ Success modal shown');
                 } catch (err) {
                     console.error('[Cart] ❌ Failed to show success modal:', err);
