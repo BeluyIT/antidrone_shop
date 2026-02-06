@@ -1,3 +1,23 @@
+// Fallback: clear cart if order was just sent (session flag)
+(function () {
+    const orderJustSent = sessionStorage.getItem('order_just_sent');
+    if (orderJustSent) {
+        console.log('[Cart] Order was just sent, clearing cart');
+        try {
+            localStorage.removeItem('antidrone_cart');
+            localStorage.removeItem('antidrone_cart_v1');
+            localStorage.removeItem('cart');
+        } catch (err) {
+            console.error('[Cart] Failed to clear cart from localStorage:', err);
+        }
+        sessionStorage.removeItem('order_just_sent');
+
+        if (typeof updateCartBadge === 'function') {
+            updateCartBadge();
+        }
+    }
+})();
+
 const CART_KEY = 'antidrone_cart';
 const LEGACY_KEYS = ['antidrone_cart_v1'];
 
@@ -484,6 +504,21 @@ console.log('[cart] cart.js loaded; window.addToCart =', typeof window.addToCart
             console.log('[cart] Badge updated on DOMContentLoaded');
         }
         renderCartPage();
+
+        const confirmBtn = document.querySelector('.btn-checkout-confirm, [data-action="confirm-order"], [data-checkout-confirm]');
+        if (confirmBtn) {
+            console.log('[Cart] Confirm button found:', confirmBtn);
+
+            confirmBtn.addEventListener('click', function (e) {
+                console.log('[Cart] ✅ Confirm button clicked!');
+                e.preventDefault();
+                e.stopPropagation();
+
+                checkoutToTelegram();
+            });
+        } else {
+            console.error('[Cart] ❌ Confirm button NOT found!');
+        }
     });
 
     const checkoutState = {
@@ -624,6 +659,89 @@ console.log('[cart] cart.js loaded; window.addToCart =', typeof window.addToCart
         openCheckoutModal();
     };
 
+    const checkoutToTelegram = () => {
+        console.log('[Cart] checkoutToTelegram called');
+
+        const cartData = getCart();
+        const cartItems = Object.values(cartData.items || {});
+        console.log('[Cart] Current cart:', cartItems);
+
+        if (!cartItems.length) {
+            alert('Кошик порожній!');
+            return;
+        }
+
+        const orderData = {
+            items: cartItems,
+            total: cartItems.reduce((sum, item) => sum + (Number(item.price) || 0) * (Number(item.qty) || 1), 0),
+            timestamp: Date.now(),
+        };
+
+        console.log('[Cart] Order data:', orderData);
+
+        try {
+            localStorage.removeItem(CART_KEY);
+            localStorage.removeItem('cart');
+            LEGACY_KEYS.forEach((key) => localStorage.removeItem(key));
+            sessionStorage.setItem('order_just_sent', 'true');
+            console.log('[Cart] ✅ Cart cleared from localStorage');
+        } catch (err) {
+            console.error('[Cart] ❌ Failed to clear cart:', err);
+        }
+
+        checkoutState.items = [];
+        checkoutState.total = 0;
+
+        try {
+            if (window.updateCartBadge) {
+                window.updateCartBadge();
+            }
+            console.log('[Cart] ✅ Badge updated');
+        } catch (err) {
+            console.error('[Cart] ❌ Failed to update badge:', err);
+        }
+
+        try {
+            closeCheckoutModal();
+            console.log('[Cart] ✅ Modal closed');
+        } catch (err) {
+            console.error('[Cart] ❌ Failed to close modal:', err);
+        }
+
+        if (window.location.pathname.includes('/cart')) {
+            try {
+                const cartContainer = document.querySelector('.cart-container, .cart-items, main');
+                if (cartContainer) {
+                    cartContainer.innerHTML = `
+                        <div style="text-align: center; padding: 4rem 2rem;">
+                            <h2 style="color: #39ff14; margin-bottom: 1rem;">✅ Замовлення відправлено!</h2>
+                            <p style="margin-bottom: 2rem;">Перевірте Telegram для продовження.</p>
+                            <a href="/" style="display: inline-block; padding: 12px 24px; background: #39ff14; color: #0a0f0a; text-decoration: none; border-radius: 5px; font-weight: 600;">На головну</a>
+                        </div>
+                    `;
+                    console.log('[Cart] ✅ Cart page UI updated');
+                }
+            } catch (err) {
+                console.error('[Cart] ❌ Failed to update UI:', err);
+            }
+        }
+
+        const botUsername = 'antidrone_order_bot';
+        const orderId = 'ORDER_' + Date.now();
+        const botUrl = `https://t.me/${botUsername}?start=${orderId}`;
+
+        console.log('[Cart] Opening bot:', botUrl);
+
+        window.open(botUrl, '_blank');
+
+        if (window.location.pathname !== '/') {
+            setTimeout(() => {
+                console.log('[Cart] Redirecting to home...');
+                window.location.href = '/';
+            }, 1000);
+        }
+    };
+
     const bindCheckoutModal = () => {
         const modal = document.getElementById('checkout-modal');
         if (!modal) return;
@@ -638,76 +756,6 @@ console.log('[cart] cart.js loaded; window.addToCart =', typeof window.addToCart
         const cancelButton = modal.querySelector('[data-checkout-cancel]');
         if (cancelButton) {
             cancelButton.addEventListener('click', () => closeCheckoutModal());
-        }
-
-        const confirmButton = modal.querySelector('[data-checkout-confirm]');
-        if (confirmButton) {
-            confirmButton.addEventListener('click', async () => {
-                if (!checkoutState.items.length) {
-                    const errorBox = document.getElementById('checkout-modal-error');
-                    if (errorBox) {
-                        errorBox.textContent = 'Кошик порожній.';
-                        errorBox.removeAttribute('hidden');
-                    } else {
-                        showToast('Кошик порожній.');
-                    }
-                    return;
-                }
-                confirmButton.disabled = true;
-                confirmButton.setAttribute('aria-busy', 'true');
-                const originalLabel = confirmButton.textContent;
-                confirmButton.textContent = 'Відправляємо...';
-                try {
-                    const result = await createOrder();
-                    if (!result || !result.order_id) {
-                        throw new Error('Сервер не повернув номер замовлення.');
-                    }
-
-                    const botUrl = `https://t.me/antidrone_order_bot?start=${result.order_id}`;
-
-                    // 1. Clear cart BEFORE opening bot
-                    clearCart();
-                    localStorage.setItem('order_sent', 'true');
-                    localStorage.setItem('order_time', String(Date.now()));
-                    log('Cart cleared before opening bot');
-
-                    // 2. Close modal
-                    closeCheckoutModal();
-
-                    // 3. Update badge immediately
-                    if (window.updateCartBadge) {
-                        window.updateCartBadge();
-                    }
-
-                    // 4. If on cart page, show success message
-                    const cartContainer = document.getElementById('cart-items');
-                    if (cartContainer) {
-                        cartContainer.innerHTML = `
-                            <div class="empty-cart-message">
-                                <h2>Замовлення відправлено!</h2>
-                                <p>Кошик очищено. Перевірте Telegram для продовження.</p>
-                                <a href="/" class="btn btn-primary">На головну</a>
-                            </div>
-                        `;
-                    }
-
-                    // 5. Open bot in new tab LAST
-                    window.open(botUrl, '_blank', 'noopener');
-                    log('Order sent to bot, cart cleared, UI updated');
-                } catch (err) {
-                    const errorBox = document.getElementById('checkout-modal-error');
-                    if (errorBox) {
-                        errorBox.textContent = err.message || 'Сталася помилка. Спробуйте ще раз.';
-                        errorBox.removeAttribute('hidden');
-                    } else {
-                        showToast(err.message || 'Сталася помилка. Спробуйте ще раз.');
-                    }
-                } finally {
-                    confirmButton.disabled = false;
-                    confirmButton.removeAttribute('aria-busy');
-                    confirmButton.textContent = originalLabel;
-                }
-            });
         }
     };
 

@@ -1,6 +1,7 @@
 """
 Django settings for antidrone project.
 """
+import time
 from dotenv import load_dotenv
 load_dotenv()
 from pathlib import Path
@@ -96,6 +97,7 @@ USE_TZ = True
 STATIC_URL = 'static/'
 STATICFILES_DIRS = [BASE_DIR / 'static']
 STATIC_ROOT = BASE_DIR / 'staticfiles'
+CACHE_BUST = int(time.time())
 
 # Media files
 MEDIA_URL = 'media/'
