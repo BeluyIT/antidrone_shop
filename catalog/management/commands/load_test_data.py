@@ -452,16 +452,16 @@ PRODUCTS = {
 
 GENERATED_TARGETS = {
     # Antennas (total 50)
-    'directional': 14,
-    'omni': 12,
-    'patch': 12,
-    'panel': 12,
-    # Modules (total 40)
-    'rf-detektory': 9,
-    'glushiteli': 8,
-    'sdr-moduli': 8,
-    'pidsylyuvachi': 7,
-    'dc-dc': 8,
+    'directional': 48,
+    'omni': 48,
+    'patch': 48,
+    'panel': 48,
+    # Modules (total 264)
+    'rf-detektory': 52,
+    'glushiteli': 52,
+    'sdr-moduli': 52,
+    'pidsylyuvachi': 54,
+    'dc-dc': 54,
     # New root categories
     'portatyvni-detektory': 8,
     'antydronovi-rushnytsi': 8,
