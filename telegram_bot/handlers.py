@@ -1,12 +1,13 @@
 """
 Message and callback handlers for the bot.
 """
-import re
-import json
 import base64
+import json
 import logging
+import re
 from datetime import datetime
-from telegram import Update, Message
+
+from telegram import Update
 from telegram.ext import ContextTypes, ConversationHandler
 from telegram.constants import ParseMode
 
@@ -29,7 +30,13 @@ logger = logging.getLogger(__name__)
 WAITING_PAYMENT_PROOF = 1
 
 # Order counter (in production use database)
-order_counter = 1000
+ORDER_COUNTER_START = 1000
+order_counter = ORDER_COUNTER_START
+
+MENU_NEW_ORDER = "📦 Нове замовлення"
+MENU_CONTACT_MANAGER = "💬 Зв'язок з менеджером"
+MENU_CATALOG = "🌐 Каталог"
+MENU_CHANNEL = "📱 Telegram канал"
 
 
 def get_next_order_id() -> int:
@@ -130,7 +137,7 @@ async def text_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
     text = update.message.text.strip()
 
     # Handle menu buttons
-    if text == "📦 Нове замовлення":
+    if text == MENU_NEW_ORDER:
         await update.message.reply_text(
             f"🛒 Щоб оформити замовлення:\n\n"
             f"1️⃣ Перейдіть на сайт {SITE_URL}\n"
@@ -141,20 +148,20 @@ async def text_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
         )
         return
 
-    if text == "💬 Зв'язок з менеджером":
+    if text == MENU_CONTACT_MANAGER:
         await update.message.reply_text(
             f"📞 Наш менеджер: {MANAGER_USERNAME}\n\n"
             f"Напишіть йому напряму для консультації або уточнення деталей замовлення."
         )
         return
 
-    if text == "🌐 Каталог":
+    if text == MENU_CATALOG:
         await update.message.reply_text(
             f"🌐 Перейти до каталогу:\n{SITE_URL}"
         )
         return
 
-    if text == "📱 Telegram канал":
+    if text == MENU_CHANNEL:
         await update.message.reply_text(
             f"📱 Наш Telegram канал: {TELEGRAM_CHANNEL}\n\n"
             f"Підписуйтесь, щоб бути в курсі новинок!"

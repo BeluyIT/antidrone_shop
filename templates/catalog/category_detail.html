@@ -56,10 +56,10 @@
             <div class="category-content">
                 <div class="category-header">
                     <h1 class="category-title-main">{{ category.name }}</h1>
-                    <span class="products-count">{{ products.count }} товарів</span>
+                    <span class="products-count">{{ products_count }} товарів</span>
                 </div>
 
-                {% if products %}
+                {% if products_count %}
                 <div class="category-products-grid">
                     {% for product in products %}
                     <article class="product-card" data-product-url="{{ product.get_absolute_url }}">
@@ -92,20 +92,36 @@
                                     <span class="product-price-current" style="font-size: 0.85rem;">За запитом</span>
                                     {% endif %}
                                 </div>
+                                {% with main_image=product.get_main_image %}
                                 <button type="button" class="btn btn-primary btn-sm js-add-to-cart"
                                     data-product-id="{{ product.id }}"
                                     data-name="{{ product.name }}"
                                     data-sku="{{ product.sku|default:'' }}"
                                     data-price="{{ product.price|floatformat:0|default:'0' }}"
-                                    data-image="{% with main_image=product.get_main_image %}{% if main_image %}{{ main_image.image.url }}{% endif %}{% endwith %}"
+                                    data-image="{% if main_image %}{{ main_image.image.url }}{% endif %}"
                                     data-url="{{ product.get_absolute_url }}">
                                     <i class="bi bi-cart-plus"></i> В кошик
                                 </button>
+                                {% endwith %}
                             </div>
                         </div>
                     </article>
                     {% endfor %}
                 </div>
+
+                {% if is_paginated %}
+                <nav class="pagination" aria-label="Каталог сторінки">
+                    {% if page_obj.has_previous %}
+                    <a class="pagination-link" href="?page={{ page_obj.previous_page_number }}">Попередня</a>
+                    {% endif %}
+                    <span class="pagination-info">
+                        Сторінка {{ page_obj.number }} з {{ paginator.num_pages }}
+                    </span>
+                    {% if page_obj.has_next %}
+                    <a class="pagination-link" href="?page={{ page_obj.next_page_number }}">Наступна</a>
+                    {% endif %}
+                </nav>
+                {% endif %}
                 {% else %}
                 <div class="no-products">
                     <div class="no-products-icon">

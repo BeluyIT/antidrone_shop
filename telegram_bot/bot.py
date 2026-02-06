@@ -1,18 +1,26 @@
 #!/usr/bin/env python3
 """ANTIDRONE Telegram bot for order intake flow with payment."""
+import html
+import asyncio
 import base64
 import json
 import logging
-import re
-from urllib import request as urlrequest
-import ssl
 import os
-import asyncio
-from typing import Any, Optional, List, Dict, Tuple
-from telegram import Update, ReplyKeyboardMarkup, KeyboardButton, InlineKeyboardMarkup, InlineKeyboardButton, ReplyKeyboardRemove
-from telegram.helpers import escape_markdown
+import re
+import ssl
+from typing import Any, Dict, List, Optional, Tuple
+from urllib import request as urlrequest
+
+from telegram import (
+    InlineKeyboardButton,
+    InlineKeyboardMarkup,
+    KeyboardButton,
+    ReplyKeyboardMarkup,
+    ReplyKeyboardRemove,
+    Update,
+)
 from telegram.constants import ParseMode
-import html
+from telegram.helpers import escape_markdown
 from telegram.ext import (
     Application,
     CommandHandler,

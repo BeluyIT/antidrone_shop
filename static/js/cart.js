@@ -1,8 +1,20 @@
+const DEBUG_CART = false;
+const log = (...args) => {
+    if (DEBUG_CART) {
+        console.log(...args);
+    }
+};
+const warn = (...args) => {
+    if (DEBUG_CART) {
+        console.warn(...args);
+    }
+};
+
 // Fallback: clear cart if order was just sent (session flag)
 (function () {
     const orderJustSent = sessionStorage.getItem('order_just_sent');
     if (orderJustSent) {
-        console.log('[Cart] Order was just sent, clearing cart');
+        log('[Cart] Order was just sent, clearing cart');
         try {
             localStorage.removeItem('antidrone_cart');
             localStorage.removeItem('antidrone_cart_v1');
@@ -22,7 +34,7 @@ const CART_KEY = 'antidrone_cart';
 const LEGACY_KEYS = ['antidrone_cart_v1'];
 
 window.updateCartBadge = () => {
-    console.log('[cart] updateCartBadge called');
+    log('[cart] updateCartBadge called');
     let cart = {};
     try {
         cart = JSON.parse(localStorage.getItem(CART_KEY) || '{}') || {};
@@ -34,21 +46,21 @@ window.updateCartBadge = () => {
         cart.items = {};
     }
     const qty = Object.values(cart.items).reduce((sum, item) => sum + (Number(item.qty) || 0), 0);
-    console.log('[cart] Total quantity:', qty);
+    log('[cart] Total quantity:', qty);
 
     const badges = [];
     const badge = document.getElementById('cartBadge');
     if (badge) {
         badges.push(badge);
-        console.log('[cart] Found badge by ID: cartBadge');
+        log('[cart] Found badge by ID: cartBadge');
     } else {
-        console.warn('[cart] Badge element #cartBadge NOT FOUND');
+        warn('[cart] Badge element #cartBadge NOT FOUND');
     }
     document.querySelectorAll('.js-cart-badge').forEach((node) => badges.push(node));
 
-    console.log('[cart] Total badges found:', badges.length);
+    log('[cart] Total badges found:', badges.length);
     if (!badges.length) {
-        console.warn('[cart] No badge elements found!');
+        warn('[cart] No badge elements found!');
         return;
     }
 
@@ -56,18 +68,18 @@ window.updateCartBadge = () => {
         node.textContent = String(qty);
         if (qty > 0) {
             node.removeAttribute('hidden');
-            console.log(`[cart] Badge ${index}: showing with qty=${qty}`);
+            log(`[cart] Badge ${index}: showing with qty=${qty}`);
         } else {
             node.setAttribute('hidden', '');
-            console.log(`[cart] Badge ${index}: hidden (qty=0)`);
+            log(`[cart] Badge ${index}: hidden (qty=0)`);
         }
     });
 };
 
 function addToCart(button) {
-    console.log('[cart] addToCart called', button);
+    log('[cart] addToCart called', button);
     if (!window.__cartAddItem) {
-        console.log('[cart] addToCart called before cart init, fallback to direct save');
+        log('[cart] addToCart called before cart init, fallback to direct save');
     }
     if (!button || !button.dataset) {
         return;
@@ -103,9 +115,9 @@ function addToCart(button) {
         } else {
             cart.items[item.id] = item;
         }
-        console.log('[cart] before save', cart);
+        log('[cart] before save', cart);
         localStorage.setItem(CART_KEY, JSON.stringify(cart));
-        console.log('[cart] after save', localStorage.getItem(CART_KEY));
+        log('[cart] after save', localStorage.getItem(CART_KEY));
         if (window.__cartUpdateBadge) {
             window.__cartUpdateBadge();
         }
@@ -121,7 +133,7 @@ function addToCart(button) {
 }
 
 function showAddToCartAnimation(btn) {
-    console.log('[cart] Starting animation');
+    log('[cart] Starting animation');
 
     // 1. Button animation - change text
     if (btn && btn.tagName === 'BUTTON') {
@@ -151,15 +163,14 @@ function showAddToCartAnimation(btn) {
         setTimeout(() => badge.classList.remove('badge-bounce'), 400);
     }
 
-    console.log('[cart] Animation complete');
+    log('[cart] Animation complete');
 }
 
 window.addToCart = addToCart;
 window.showAddToCartAnimation = showAddToCartAnimation;
-console.log('[cart] cart.js loaded; window.addToCart =', typeof window.addToCart);
+log('[cart] cart.js loaded; window.addToCart =', typeof window.addToCart);
 
 (() => {
-    const log = (...args) => console.log('[cart]', ...args);
     log('cart.js loaded');
 
     const safeParse = (value) => {
@@ -495,22 +506,22 @@ console.log('[cart] cart.js loaded; window.addToCart =', typeof window.addToCart
     };
 
     document.addEventListener('DOMContentLoaded', () => {
-        console.log('[cart] DOMContentLoaded fired');
+        log('[cart] DOMContentLoaded fired');
         checkConfirmedOrder();
         checkAutoCleanCart();
         checkRecentOrder();
         if (window.updateCartBadge) {
             window.updateCartBadge();
-            console.log('[cart] Badge updated on DOMContentLoaded');
+            log('[cart] Badge updated on DOMContentLoaded');
         }
         renderCartPage();
 
         const confirmBtn = document.querySelector('.btn-checkout-confirm, [data-action="confirm-order"], [data-checkout-confirm]');
         if (confirmBtn) {
-            console.log('[Cart] Confirm button found:', confirmBtn);
+            log('[Cart] Confirm button found:', confirmBtn);
 
             confirmBtn.addEventListener('click', function (e) {
-                console.log('[Cart] ✅ Confirm button clicked!');
+                log('[Cart] ✅ Confirm button clicked!');
                 e.preventDefault();
                 e.stopPropagation();
 
@@ -663,7 +674,7 @@ console.log('[cart] cart.js loaded; window.addToCart =', typeof window.addToCart
     const checkoutToTelegram = async () => {
         if (checkoutState.isSubmitting) return;
         checkoutState.isSubmitting = true;
-        console.log('[Cart] checkoutToTelegram called');
+        log('[Cart] checkoutToTelegram called');
 
         const confirmBtn = document.querySelector('.btn-checkout-confirm, [data-action="confirm-order"], [data-checkout-confirm]');
         if (confirmBtn) {
@@ -679,7 +690,7 @@ console.log('[cart] cart.js loaded; window.addToCart =', typeof window.addToCart
 
         const cartData = getCart();
         const cartItems = Object.values(cartData.items || {});
-        console.log('[Cart] Current cart:', cartItems);
+        log('[Cart] Current cart:', cartItems);
 
         if (!cartItems.length) {
             const message = 'Кошик порожній!';
@@ -720,7 +731,7 @@ console.log('[cart] cart.js loaded; window.addToCart =', typeof window.addToCart
                 localStorage.setItem('order_sent', 'true');
                 localStorage.setItem('order_time', String(Date.now()));
                 setOrderTimestamp();
-                console.log('[Cart] ✅ Cart cleared from localStorage');
+                log('[Cart] ✅ Cart cleared from localStorage');
             } catch (err) {
                 console.error('[Cart] ❌ Failed to clear cart:', err);
             }
@@ -732,14 +743,14 @@ console.log('[cart] cart.js loaded; window.addToCart =', typeof window.addToCart
                 if (window.updateCartBadge) {
                     window.updateCartBadge();
                 }
-                console.log('[Cart] ✅ Badge updated');
+                log('[Cart] ✅ Badge updated');
             } catch (err) {
                 console.error('[Cart] ❌ Failed to update badge:', err);
             }
 
             try {
                 closeCheckoutModal();
-                console.log('[Cart] ✅ Modal closed');
+                log('[Cart] ✅ Modal closed');
             } catch (err) {
                 console.error('[Cart] ❌ Failed to close modal:', err);
             }
@@ -755,7 +766,7 @@ console.log('[cart] cart.js loaded; window.addToCart =', typeof window.addToCart
                                 <a href="/" style="display: inline-block; padding: 12px 24px; background: #39ff14; color: #0a0f0a; text-decoration: none; border-radius: 5px; font-weight: 600;">На головну</a>
                             </div>
                         `;
-                        console.log('[Cart] ✅ Cart page UI updated');
+                        log('[Cart] ✅ Cart page UI updated');
                     }
                 } catch (err) {
                     console.error('[Cart] ❌ Failed to update UI:', err);
@@ -765,13 +776,13 @@ console.log('[cart] cart.js loaded; window.addToCart =', typeof window.addToCart
             const botUsername = 'antidrone_order_bot';
             const botUrl = `https://t.me/${botUsername}?start=${encodeURIComponent(orderId)}`;
 
-            console.log('[Cart] Opening bot:', botUrl);
+            log('[Cart] Opening bot:', botUrl);
 
             window.open(botUrl, '_blank', 'noopener');
 
             if (window.location.pathname !== '/') {
                 setTimeout(() => {
-                    console.log('[Cart] Redirecting to home...');
+                    log('[Cart] Redirecting to home...');
                     window.location.href = '/';
                 }, 1000);
             }
@@ -814,10 +825,10 @@ console.log('[cart] cart.js loaded; window.addToCart =', typeof window.addToCart
 
     // Mobile menu toggle
     const initMobileMenu = () => {
-        console.log('[Mobile Menu] Initializing...');
+        log('[Mobile Menu] Initializing...');
         const toggle = document.querySelector('.mobile-toggle');
         const mobileNav = document.getElementById('mobile-nav');
-        console.log('[Mobile Menu] Elements:', { toggle, mobileNav });
+        log('[Mobile Menu] Elements:', { toggle, mobileNav });
 
         if (!toggle || !mobileNav) {
             console.error('[Mobile Menu] Elements not found!');
@@ -825,9 +836,9 @@ console.log('[cart] cart.js loaded; window.addToCart =', typeof window.addToCart
         }
 
         toggle.addEventListener('click', () => {
-            console.log('[Mobile Menu] Toggle clicked!');
+            log('[Mobile Menu] Toggle clicked!');
             const isOpen = mobileNav.classList.toggle('is-open');
-            console.log('[Mobile Menu] Is open:', isOpen);
+            log('[Mobile Menu] Is open:', isOpen);
             toggle.classList.toggle('is-active', isOpen);
             toggle.setAttribute('aria-expanded', isOpen ? 'true' : 'false');
 
@@ -857,7 +868,7 @@ console.log('[cart] cart.js loaded; window.addToCart =', typeof window.addToCart
             if (mobileNav.classList.contains('is-open') &&
                 !mobileNav.contains(e.target) &&
                 !toggle.contains(e.target)) {
-                console.log('[Mobile Menu] Closing (clicked outside)');
+                log('[Mobile Menu] Closing (clicked outside)');
                 mobileNav.classList.remove('is-open');
                 toggle.classList.remove('is-active');
                 toggle.setAttribute('aria-expanded', 'false');
@@ -878,7 +889,7 @@ console.log('[cart] cart.js loaded; window.addToCart =', typeof window.addToCart
 
     // Also update badge immediately if DOM is already ready
     if (document.readyState === 'complete' || document.readyState === 'interactive') {
-        console.log('[cart] DOM already ready, updating badge immediately');
+        log('[cart] DOM already ready, updating badge immediately');
         setTimeout(() => {
             if (window.updateCartBadge) {
                 window.updateCartBadge();

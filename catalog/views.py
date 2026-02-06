@@ -3,15 +3,18 @@ import time
 import secrets
 import re
 from pathlib import Path
-from urllib import request as urlrequest
 
 from django.views.generic import TemplateView, ListView, DetailView
 from django.shortcuts import get_object_or_404
 from django.http import JsonResponse
 from django.views.decorators.http import require_POST
 from django.conf import settings
+from django.core.paginator import Paginator
 from decouple import config
 from .models import Category, Product
+
+
+ORDER_ID_RE = re.compile(r'^[a-z0-9]{8,12}$')
 
 
 class IndexView(TemplateView):
@@ -50,10 +53,19 @@ class CategoryDetailView(DetailView):
         category = self.object
         # Get all descendant categories including current
         descendants = category.get_descendants(include_self=True)
-        context['products'] = Product.objects.filter(
+        products_qs = Product.objects.filter(
             category__in=descendants,
             is_available=True
         ).select_related('category').prefetch_related('images')
+        page_size = getattr(settings, 'CATALOG_PAGE_SIZE', 24)
+        paginator = Paginator(products_qs, page_size)
+        page_number = self.request.GET.get('page')
+        page_obj = paginator.get_page(page_number)
+        context['products'] = page_obj
+        context['page_obj'] = page_obj
+        context['paginator'] = paginator
+        context['is_paginated'] = page_obj.has_other_pages()
+        context['products_count'] = paginator.count
         context['subcategories'] = category.get_children().filter(is_active=True)
         context['ancestors'] = category.get_ancestors()
         return context
@@ -141,20 +153,6 @@ def _validate_payload(payload: dict):
     return items, total, currency, page, ts
 
 
-def _resolve_bot_credentials() -> tuple[str, str]:
-    bot_token = config('BOT_TOKEN', default='')
-    chat_id = config('ORDERS_CHAT_ID', default='')
-    if bot_token and chat_id:
-        return bot_token, str(chat_id)
-    try:
-        from telegram_bot import config as bot_config
-        bot_token = bot_token or getattr(bot_config, 'BOT_TOKEN', '')
-        chat_id = chat_id or getattr(bot_config, 'ORDERS_CHAT_ID', '')
-    except Exception:
-        pass
-    return str(bot_token or ''), str(chat_id or '')
-
-
 def _cleanup_orders(orders_dir: Path, ttl_seconds: int) -> None:
     if ttl_seconds <= 0:
         return
@@ -216,9 +214,9 @@ def create_order(request):
     return JsonResponse({'order_id': order_id})
 
 
-def get_order(request, order_id: str):
-    if not re.match(r'^[a-z0-9]{8,12}$', order_id):
-        return JsonResponse({'error': 'Некоректний номер замовлення.'}, status=400)
+def _load_order_data(order_id: str):
+    if not ORDER_ID_RE.match(order_id):
+        return None, JsonResponse({'error': 'Некоректний номер замовлення.'}, status=400)
 
     orders_dir = _build_orders_dir()
     ttl_hours = max(config('ORDER_TTL_HOURS', default=168, cast=int), 1)
@@ -226,13 +224,21 @@ def get_order(request, order_id: str):
 
     order_path = orders_dir / f"{order_id}.json"
     if not order_path.exists():
-        return JsonResponse({'error': 'Замовлення не знайдено.'}, status=404)
+        return None, JsonResponse({'error': 'Замовлення не знайдено.'}, status=404)
 
     try:
         with open(order_path, 'r', encoding='utf-8') as handle:
             data = json.load(handle)
     except OSError:
-        return JsonResponse({'error': 'Не вдалося прочитати замовлення.'}, status=500)
+        return None, JsonResponse({'error': 'Не вдалося прочитати замовлення.'}, status=500)
+
+    return data, None
+
+
+def get_order(request, order_id: str):
+    data, error = _load_order_data(order_id)
+    if error:
+        return error
 
     response = {
         'order_id': data.get('order_id', order_id),
@@ -247,23 +253,12 @@ def get_order(request, order_id: str):
 
 @require_POST
 def confirm_order(request, order_id: str):
-    if not re.match(r'^[a-z0-9]{8,12}$', order_id):
-        return JsonResponse({'error': 'Некоректний номер замовлення.'}, status=400)
+    data, error = _load_order_data(order_id)
+    if error:
+        return error
 
     orders_dir = _build_orders_dir()
-    ttl_hours = max(config('ORDER_TTL_HOURS', default=168, cast=int), 1)
-    _cleanup_orders(orders_dir, ttl_hours * 3600)
-
     order_path = orders_dir / f"{order_id}.json"
-    if not order_path.exists():
-        return JsonResponse({'error': 'Замовлення не знайдено.'}, status=404)
-
-    try:
-        with open(order_path, 'r', encoding='utf-8') as handle:
-            data = json.load(handle)
-    except OSError:
-        return JsonResponse({'error': 'Не вдалося прочитати замовлення.'}, status=500)
-
     data['status'] = 'confirmed'
     data['confirmed_at'] = int(time.time())
     try:
