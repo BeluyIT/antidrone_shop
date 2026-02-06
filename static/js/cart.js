@@ -496,10 +496,15 @@ log('[cart] cart.js loaded; window.addToCart =', typeof window.addToCart);
                     const items = Object.values(cart.items);
                     if (!items.length) {
                         cartContainer.innerHTML = `
-                            <div class="empty-cart-message">
-                                <h2>Замовлення відправлено!</h2>
-                                <p>Кошик очищено. Перевірте Telegram для продовження.</p>
-                                <a href="/" class="btn btn-primary">На головну</a>
+                            <div style="min-height: 50vh; display: flex; align-items: center; justify-content: center; text-align: center; padding: 3rem 1.5rem;">
+                                <div>
+                                    <h2 style="margin-bottom: 0.75rem;">✅ Замовлення успішно надіслане</h2>
+                                    <p style="margin-bottom: 1.5rem;">Перевірте Telegram для продовження.</p>
+                                    <div style="display: flex; gap: 0.75rem; justify-content: center; flex-wrap: wrap;">
+                                        <a href="https://t.me/antidrone_order_bot" target="_blank" rel="noopener" class="btn btn-primary">Відкрити Telegram</a>
+                                        <a href="/" class="btn btn-primary">На головну</a>
+                                    </div>
+                                </div>
                             </div>
                         `;
                     }
@@ -670,11 +675,10 @@ log('[cart] cart.js loaded; window.addToCart =', typeof window.addToCart);
         checkoutState.isSubmitting = true;
         log('[Cart] checkoutToTelegram called');
 
-        // Safari blocks popups if window.open is not called directly from a user gesture.
-        // Open a blank tab synchronously; we will navigate it after order creation.
+        // Open a real bridge page to avoid about:blank and keep popup tied to user gesture.
         let botPopup = null;
         try {
-            botPopup = window.open('about:blank', '_blank', 'noopener');
+            botPopup = window.open('/telegram-bridge/', '_blank', 'noopener');
         } catch (err) {
             botPopup = null;
         }
@@ -763,10 +767,15 @@ log('[cart] cart.js loaded; window.addToCart =', typeof window.addToCart);
                     const cartContainer = document.querySelector('.cart-container, .cart-items, main');
                     if (cartContainer) {
                         cartContainer.innerHTML = `
-                            <div style="text-align: center; padding: 4rem 2rem;">
-                                <h2 style="color: #39ff14; margin-bottom: 1rem;">✅ Замовлення відправлено!</h2>
-                                <p style="margin-bottom: 2rem;">Перевірте Telegram для продовження.</p>
-                                <a href="/" style="display: inline-block; padding: 12px 24px; background: #39ff14; color: #0a0f0a; text-decoration: none; border-radius: 5px; font-weight: 600;">На головну</a>
+                            <div style="min-height: 50vh; display: flex; align-items: center; justify-content: center; text-align: center; padding: 4rem 2rem;">
+                                <div>
+                                    <h2 style="color: #39ff14; margin-bottom: 1rem;">✅ Замовлення успішно надіслане</h2>
+                                    <p style="margin-bottom: 2rem;">Перевірте Telegram для продовження.</p>
+                                    <div style="display: flex; gap: 0.75rem; justify-content: center; flex-wrap: wrap;">
+                                        <a href="https://t.me/antidrone_order_bot" target="_blank" rel="noopener" style="display: inline-block; padding: 12px 24px; background: #39ff14; color: #0a0f0a; text-decoration: none; border-radius: 5px; font-weight: 600;">Відкрити Telegram</a>
+                                        <a href="/" style="display: inline-block; padding: 12px 24px; background: #39ff14; color: #0a0f0a; text-decoration: none; border-radius: 5px; font-weight: 600;">На головну</a>
+                                    </div>
+                                </div>
                             </div>
                         `;
                         log('[Cart] ✅ Cart page UI updated');

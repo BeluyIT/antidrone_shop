@@ -9,6 +9,7 @@ urlpatterns = [
     path('', views.IndexView.as_view(), name='index'),
     path('about/', TemplateView.as_view(template_name='pages/about.html'), name='about'),
     path('delivery/', TemplateView.as_view(template_name='pages/delivery.html'), name='delivery'),
+    path('telegram-bridge/', TemplateView.as_view(template_name='pages/telegram_bridge.html'), name='telegram_bridge'),
     path('catalog/', views.CategoryListView.as_view(), name='category_list'),
     path('catalog/<slug:slug>/', views.CategoryDetailView.as_view(), name='category_detail'),
     path('catalog/<slug:category_slug>/<slug:product_slug>/', views.ProductDetailView.as_view(), name='product_detail'),
