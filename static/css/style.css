@@ -1741,15 +1741,58 @@ body.modal-open {
 }
 
 /* ============================================
+   RESPONSIVE BASE RULES
+   ============================================ */
+img {
+    max-width: 100%;
+    height: auto;
+}
+
+/* ============================================
    RESPONSIVE DESIGN
    ============================================ */
-@media (max-width: 1200px) {
+
+/* Великі монітори (1440p, 4K) */
+@media (min-width: 1441px) {
+    .container {
+        max-width: 1400px;
+    }
+
     .products-grid {
-        grid-template-columns: repeat(3, 1fr);
+        grid-template-columns: repeat(4, 1fr);
+        gap: 2.5rem;
+    }
+
+    .hero-title {
+        font-size: 4rem;
     }
 }
 
-@media (max-width: 1024px) {
+/* Дуже великі монітори (ultra-wide, 4K+) */
+@media (min-width: 1920px) {
+    .container {
+        max-width: 1800px;
+    }
+
+    .products-grid {
+        grid-template-columns: repeat(5, 1fr);
+    }
+}
+
+/* Ноутбуки та маленькі десктопи */
+@media (min-width: 1025px) and (max-width: 1440px) {
+    .container {
+        max-width: 1200px;
+    }
+
+    .products-grid {
+        grid-template-columns: repeat(3, 1fr);
+        gap: 2rem;
+    }
+}
+
+/* Планшети (iPad, Galaxy Tab) */
+@media (min-width: 769px) and (max-width: 1024px) {
     .category-layout {
         grid-template-columns: 1fr;
     }
@@ -1769,12 +1812,34 @@ body.modal-open {
     .product-gallery {
         position: static;
     }
+
+    .products-grid {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 1.5rem;
+    }
+
+    .hero-title {
+        font-size: 2.5rem;
+    }
 }
 
+/* Samsung Fold розгорнутий (широкий режим) */
+@media (min-width: 653px) and (max-width: 884px) {
+    .products-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+}
+
+/* Звичайні телефони (iPhone, Android) */
 @media (max-width: 768px) {
+    .container {
+        padding: 0 15px;
+    }
+
     .hero {
         height: 50vh;
         min-height: 400px;
+        padding: 2rem 0;
     }
 
     .hero-title {
@@ -1786,10 +1851,14 @@ body.modal-open {
         font-size: 1rem;
     }
 
-
     .products-grid,
     .category-products-grid {
         grid-template-columns: repeat(2, 1fr);
+        gap: 1rem;
+    }
+
+    .product-grid {
+        grid-template-columns: 1fr;
         gap: 1rem;
     }
 
@@ -1797,8 +1866,24 @@ body.modal-open {
         grid-template-columns: 1fr;
     }
 
+    .category-layout {
+        grid-template-columns: 1fr;
+    }
+
+    .category-sidebar {
+        position: static;
+    }
+
     .category-card {
         padding: 2rem;
+    }
+
+    .product-layout {
+        grid-template-columns: 1fr;
+    }
+
+    .product-gallery {
+        position: static;
     }
 
     .header-nav {
@@ -1862,8 +1947,18 @@ body.modal-open {
     .cart-actions {
         justify-self: start;
     }
+
+    .checkout-modal-dialog {
+        max-height: 85vh;
+    }
+
+    table {
+        display: block;
+        overflow-x: auto;
+    }
 }
 
+/* Маленькі телефони */
 @media (max-width: 480px) {
     .products-grid,
     .category-products-grid {
@@ -1875,17 +1970,52 @@ body.modal-open {
         letter-spacing: 2px;
     }
 
-
     .section {
         padding: 3rem 0;
     }
 
-    .container {
-        padding: 0 15px;
-    }
-
     .product-card-image {
         height: 180px;
+    }
+}
+
+/* Дуже маленькі телефони (Galaxy Fold згорнутий) */
+@media (max-width: 380px) {
+    header .container {
+        padding: 0 8px;
+        gap: 6px;
+    }
+
+    .logo {
+        font-size: 1.2rem;
+    }
+
+    .header-actions {
+        gap: 8px;
+    }
+
+    .mobile-toggle {
+        padding: 6px;
+        font-size: 1.2rem;
+    }
+
+    .hero-title {
+        font-size: 1.5rem;
+    }
+
+    .product-card {
+        padding: 12px;
+    }
+}
+
+/* Landscape режим на телефонах */
+@media (max-height: 600px) and (orientation: landscape) {
+    .hero {
+        min-height: 50vh;
+    }
+
+    .checkout-modal-dialog {
+        max-height: 95vh;
     }
 }
 

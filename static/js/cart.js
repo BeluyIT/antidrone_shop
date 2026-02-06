@@ -423,8 +423,23 @@ console.log('[cart] cart.js loaded; window.addToCart =', typeof window.addToCart
         }
     });
 
+    // Auto-clear cart when redirected from bot with ?confirmed_order=
+    const checkConfirmedOrder = () => {
+        const params = new URLSearchParams(window.location.search);
+        if (params.has('confirmed_order')) {
+            log('Confirmed order detected, clearing cart');
+            clearCart();
+            localStorage.removeItem('order_timestamp');
+            // Clean URL without reloading
+            const url = new URL(window.location);
+            url.searchParams.delete('confirmed_order');
+            window.history.replaceState({}, '', url.pathname + url.search);
+        }
+    };
+
     document.addEventListener('DOMContentLoaded', () => {
         console.log('[cart] DOMContentLoaded fired');
+        checkConfirmedOrder();
         checkAutoCleanCart();
         if (window.updateCartBadge) {
             window.updateCartBadge();
