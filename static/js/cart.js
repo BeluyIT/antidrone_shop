@@ -432,6 +432,13 @@ log('[cart] cart.js loaded; window.addToCart =', typeof window.addToCart);
             return;
         }
 
+        const confirmTrigger = event.target.closest('[data-checkout-confirm], [data-action="confirm-order"]');
+        if (confirmTrigger) {
+            event.preventDefault();
+            checkoutToTelegram();
+            return;
+        }
+
         const actionButton = event.target.closest('[data-cart-action]');
         if (!actionButton) return;
 
@@ -516,20 +523,7 @@ log('[cart] cart.js loaded; window.addToCart =', typeof window.addToCart);
         }
         renderCartPage();
 
-        const confirmBtn = document.querySelector('.btn-checkout-confirm, [data-action="confirm-order"], [data-checkout-confirm]');
-        if (confirmBtn) {
-            log('[Cart] Confirm button found:', confirmBtn);
-
-            confirmBtn.addEventListener('click', function (e) {
-                log('[Cart] ✅ Confirm button clicked!');
-                e.preventDefault();
-                e.stopPropagation();
-
-                checkoutToTelegram();
-            });
-        } else {
-            console.error('[Cart] ❌ Confirm button NOT found!');
-        }
+        // Confirm button handler is bound via event delegation above.
     });
 
     const checkoutState = {
@@ -676,6 +670,15 @@ log('[cart] cart.js loaded; window.addToCart =', typeof window.addToCart);
         checkoutState.isSubmitting = true;
         log('[Cart] checkoutToTelegram called');
 
+        // Safari blocks popups if window.open is not called directly from a user gesture.
+        // Open a blank tab synchronously; we will navigate it after order creation.
+        let botPopup = null;
+        try {
+            botPopup = window.open('about:blank', '_blank', 'noopener');
+        } catch (err) {
+            botPopup = null;
+        }
+
         const confirmBtn = document.querySelector('.btn-checkout-confirm, [data-action="confirm-order"], [data-checkout-confirm]');
         if (confirmBtn) {
             confirmBtn.setAttribute('disabled', '');
@@ -778,9 +781,21 @@ log('[cart] cart.js loaded; window.addToCart =', typeof window.addToCart);
 
             log('[Cart] Opening bot:', botUrl);
 
-            window.open(botUrl, '_blank', 'noopener');
+            let openedInSameTab = false;
+            try {
+                if (botPopup && !botPopup.closed) {
+                    botPopup.location.href = botUrl;
+                } else {
+                    // Popup blocked: fall back to same-tab navigation.
+                    openedInSameTab = true;
+                    window.location.href = botUrl;
+                }
+            } catch (err) {
+                openedInSameTab = true;
+                window.location.href = botUrl;
+            }
 
-            if (window.location.pathname !== '/') {
+            if (!openedInSameTab && window.location.pathname !== '/') {
                 setTimeout(() => {
                     log('[Cart] Redirecting to home...');
                     window.location.href = '/';
