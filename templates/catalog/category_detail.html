@@ -111,15 +111,35 @@
 
                 {% if is_paginated %}
                 <nav class="pagination" aria-label="Каталог сторінки">
-                    {% if page_obj.has_previous %}
-                    <a class="pagination-link" href="?page={{ page_obj.previous_page_number }}">Попередня</a>
+                    <a class="pagination-link{% if not page_obj.has_previous %} disabled{% endif %}"
+                       href="{% if page_obj.has_previous %}?page={{ page_obj.previous_page_number }}{% else %}#{% endif %}">
+                        &lt;
+                    </a>
+
+                    <a class="pagination-link{% if page_obj.number == 1 %} active{% endif %}" href="?page=1">1</a>
+
+                    {% if show_left_ellipsis %}
+                    <span class="pagination-ellipsis">…</span>
                     {% endif %}
-                    <span class="pagination-info">
-                        Сторінка {{ page_obj.number }} з {{ paginator.num_pages }}
-                    </span>
-                    {% if page_obj.has_next %}
-                    <a class="pagination-link" href="?page={{ page_obj.next_page_number }}">Наступна</a>
+
+                    {% for num in page_numbers %}
+                        {% if num != 1 and num != paginator.num_pages %}
+                        <a class="pagination-link{% if page_obj.number == num %} active{% endif %}" href="?page={{ num }}">{{ num }}</a>
+                        {% endif %}
+                    {% endfor %}
+
+                    {% if paginator.num_pages > 1 %}
+                        {% if show_right_ellipsis %}
+                        <span class="pagination-ellipsis">…</span>
+                        {% endif %}
+                        <a class="pagination-link{% if page_obj.number == paginator.num_pages %} active{% endif %}"
+                           href="?page={{ paginator.num_pages }}">{{ paginator.num_pages }}</a>
                     {% endif %}
+
+                    <a class="pagination-link{% if not page_obj.has_next %} disabled{% endif %}"
+                       href="{% if page_obj.has_next %}?page={{ page_obj.next_page_number }}{% else %}#{% endif %}">
+                        &gt;
+                    </a>
                 </nav>
                 {% endif %}
                 {% else %}

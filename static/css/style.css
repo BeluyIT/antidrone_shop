@@ -1414,6 +1414,24 @@ body.modal-open {
     box-shadow: 0 0 10px var(--accent-dim);
 }
 
+.pagination-link.active {
+    color: var(--accent-primary);
+    border-color: var(--accent-primary);
+    background: var(--bg-secondary);
+    box-shadow: 0 0 12px var(--accent-dim);
+}
+
+.pagination-link.disabled {
+    opacity: 0.4;
+    pointer-events: none;
+}
+
+.pagination-ellipsis {
+    color: var(--text-muted);
+    padding: 0 0.25rem;
+    font-size: 1rem;
+}
+
 .pagination-info {
     font-family: var(--font-mono);
     font-size: 0.85rem;

@@ -55,6 +55,15 @@ class CategoryDetailView(DetailView):
         context['paginator'] = paginator
         context['is_paginated'] = page_obj.has_other_pages()
         context['products_count'] = paginator.count
+        if page_obj.has_other_pages():
+            current = page_obj.number
+            total_pages = paginator.num_pages
+            window = 2
+            start = max(current - window, 1)
+            end = min(current + window, total_pages)
+            context['page_numbers'] = list(range(start, end + 1))
+            context['show_left_ellipsis'] = start > 2
+            context['show_right_ellipsis'] = end < total_pages - 1
         context['subcategories'] = category.get_children().filter(is_active=True)
         context['ancestors'] = category.get_ancestors()
         return context
