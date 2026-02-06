@@ -624,7 +624,8 @@ console.log('[cart] cart.js loaded; window.addToCart =', typeof window.addToCart
                     if (!result || !result.order_id) {
                         throw new Error('Сервер не повернув номер замовлення.');
                     }
-                    setOrderTimestamp();
+                    clearCart();
+                    log('Order confirmed, cart cleared');
                     closeCheckoutModal();
                     window.location.href = `https://t.me/antidrone_order_bot?start=${result.order_id}`;
                 } catch (err) {
