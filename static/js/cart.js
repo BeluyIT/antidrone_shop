@@ -675,10 +675,10 @@ log('[cart] cart.js loaded; window.addToCart =', typeof window.addToCart);
         checkoutState.isSubmitting = true;
         log('[Cart] checkoutToTelegram called');
 
-        // Open a real bridge page to avoid about:blank and keep popup tied to user gesture.
+        // Open Telegram immediately to keep popup tied to user gesture.
         let botPopup = null;
         try {
-            botPopup = window.open('/telegram-bridge/', '_blank', 'noopener');
+            botPopup = window.open('https://t.me/antidrone_order_bot', '_blank', 'noopener');
         } catch (err) {
             botPopup = null;
         }
