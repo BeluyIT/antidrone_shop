@@ -813,12 +813,11 @@ log('[cart] cart.js loaded; window.addToCart =', typeof window.addToCart);
             try {
                 if (botPopup && !botPopup.closed) {
                     botPopup.location.href = botUrl;
-                } else {
-                    // Popup blocked: fall back to same-tab navigation.
-                    window.location.href = botUrl;
                 }
+                // If popup was blocked, we don't auto-redirect this tab.
+                // User can use the "Open Telegram" link in the success modal.
             } catch (err) {
-                window.location.href = botUrl;
+                // ignore
             }
         } catch (err) {
             const message = err instanceof Error ? err.message : 'Не вдалося оформити замовлення.';
